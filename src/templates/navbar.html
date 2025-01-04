@@ -1,0 +1,31 @@
+<ul>
+    <li>
+        <button class="ui-btn" onclick="root_redirect()"><span>Главная</span></button>
+    </li>
+    <li>
+        <button class="ui-btn"><span>О сервисе</span></button>
+    </li>
+    <li>
+        <button class="ui-btn" onclick="snake_redirect()"><span>Змейка</span></button>
+    </li>
+    <li class="move-left">
+        <button class="ui-btn"
+                onclick="login_redirect()"><span>Log in</span></button>
+    </li>
+</ul>
+
+
+<script language="JavaScript">
+    function root_redirect() {
+      document.location.href = '/'
+    }
+      function login_redirect() {
+      document.location.href = '/login_proxy'
+    }
+     function snake_redirect() {
+      document.location.href = '/snake'
+    }
+</script>
+
+
+

@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Login - FastAPI Фронтенд
+{% endblock %}
+
+{% block content %}
+<div class="modal">
+    <form class="form" id="loginForm">
+  <span class="input-span">
+    <label for="email" class="label">Email</label>
+    <input type="email" name="email" id="email"
+    /></span>
+        <span class="input-span">
+    <label for="password" class="label">Password</label>
+    <input type="password" name="password" id="password"
+    /></span>
+        <span class="span"><a href="#">Forgot password?</a></span>
+<!--          <input class="submit" type="submit" value="Log in" />-->
+        <button type="submit" class="ui-btn"  id="loginButton"><span>Log in</span></button>
+        <span class="span">Don't have an account? <a href="#">Sign up</a></span>
+    </form>
+</div>
+<script>
+    document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Предотвращаем отправку формы
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            // Создание строки с параметрами
+            const params = new URLSearchParams();
+            params.append('username', email);
+            params.append('password', password);
+
+            // Отправка данных на API
+            fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: params.toString(),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.detail || 'Network response was not ok'); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Success:', data);
+                // Установка токена в куки
+                document.Cookie = `access_token=${data.access_token}; path=/; Secure; HttpOnly`;
+                // Перенаправление на защищенную страницу
+<!--                document.location.href = '/';-->
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                alert('Login failed: ' + error.message);
+            });
+        });
+</script>
+{% endblock %}

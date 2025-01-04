@@ -1,0 +1,16 @@
+<div class="input-section">
+    <h2>Введите данные</h2>
+    <textarea id="input" placeholder="Введите данные для геокодирования" required></textarea>
+    <button onclick="sendData()" class="btn">raw data</button>
+    <button onclick="sendData_google()" class="btn">google</button>
+    <button id="downloadButton" class="btn" onclick="downloadData()">gpx</button>
+    <button id="loadPlotBtn" onclick="call_autocad()" class="btn" disabled>build
+    </button>
+    <p></p>
+    <img id="plotImage" src="" alt=""/>
+    <input type="hidden" id="hiddenField" name="hiddenData">
+</div>
+<div class="output-section">
+    <h2>Результат</h2>
+    <ul id="coordinatesList"></ul>
+</div>

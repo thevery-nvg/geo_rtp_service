@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Logout - FastAPI Фронтенд</title>
+{% endblock %}
+
+{% block content %}
+<form method="post" action="{{ url_for('logout_proxy') }}" id="logout_form">
+    <input class="submit" type="submit" value="Logout">
+</form>
+{% endblock %}

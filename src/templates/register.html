@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Login - FastAPI Фронтенд
+{% endblock %}
+
+{% block content %}
+<style>
+
+.form {
+  --bg-light: #ffffff;
+  --bg-dark: #707070;
+  --clr: #58bc82;
+  --clr-alpha: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  max-width: 300px;
+}
+
+.form .input-span {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form input[type="email"],
+.form input[type="password"] {
+  border-radius: 0.5rem;
+  padding: 1rem 0.75rem;
+  width: 100%;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--clr-alpha);
+  outline: 2px solid var(--bg-dark);
+}
+
+.form input[type="email"]:focus,
+.form input[type="password"]:focus {
+  outline: 2px solid var(--clr);
+}
+
+.label {
+  align-self: flex-start;
+  color: var(--clr);
+  font-weight: 600;
+}
+
+.form .submit {
+  padding: 1rem 0.75rem;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 3rem;
+  background-color: var(--bg-dark);
+  color: var(--bg-light);
+  border: none;
+  cursor: pointer;
+  transition: all 300ms;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.form .submit:hover {
+  background-color: var(--clr);
+  color: var(--bg-dark);
+}
+
+.span {
+  text-decoration: none;
+  color: var(--bg-dark);
+}
+
+.span a {
+  color: var(--clr);
+
+}
+.modal{
+  padding: 50px;
+  background: rgba(240, 240, 240, 0.845);
+  position: fixed; top: 50%; left: 50%;
+  -webkit-transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+
+</style>
+<div class="modal">
+<form class="form">
+  <span class="input-span">
+    <label for="email" class="label">Email</label>
+    <input type="email" name="email" id="email"
+  /></span>
+  <span class="input-span">
+    <label for="password" class="label">Password</label>
+    <input type="password" name="password" id="password"
+  /></span>
+      <span class="input-span">
+    <label for="confirm-password" class="label">Confirm password</label>
+    <input type="password" name="confirm-password" id="confirm-password"
+  /></span>
+     <button type="submit">Register</button>
+  <span class="span">Already have an account? <a href="#">Sign in</a></span>
+</form>
+</div>
+
+<script>
+   <script>
+        document.getElementById('registerForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Предотвращаем отправку формы
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            // Создание строки с параметрами
+            const params = new URLSearchParams();
+            params.append('email', email);
+            params.append('password', password);
+
+            // Отправка данных на API
+            fetch('/api/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: params.toString(),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.detail || 'Network response was not ok'); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Success:', data);
+                // Перенаправление на страницу входа
+                document.location.href = '/login';
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                alert('Registration failed: ' + error.message);
+            });
+        });
+    </script>
+</script>
+{% endblock %}
