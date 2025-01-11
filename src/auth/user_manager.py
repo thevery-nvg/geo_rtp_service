@@ -9,8 +9,8 @@ from .dependencies.users import get_users_db
 from fastapi import Depends, Request, Response
 
 from .schemas import UserCreate
+from loguru import logger
 
-logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from fastapi import Request, Depends

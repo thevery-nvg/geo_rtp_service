@@ -417,3 +417,8 @@ li {
   -ms-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);
 }
+
+#coordinatesList {
+    display: flex;
+    flex-direction: column; /* Это заставляет flex элементы располагаться в столбик */
+}
