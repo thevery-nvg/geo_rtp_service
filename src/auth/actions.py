@@ -59,4 +59,8 @@ async def create_superuser(
 
 
 if __name__ == "__main__":
-    asyncio.run(create_superuser())
+    import numpy as np
+    a=np.linspace(6420,12800,10).tolist()
+    for i in a:
+        print(int(i/100),",",np.random.randint(0,99),sep="")
+

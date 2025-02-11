@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends
 
 fastapi_users = FastAPIUsers[User, int](
     get_user_manager,
-    [auth_jwt_backend],
+    [auth_cookie_backend],
 )
 
 http_bearer = HTTPBearer(auto_error=False)
@@ -22,7 +22,7 @@ auth_router = APIRouter(
 
 # \login \logout
 auth_router.include_router(
-    fastapi_users.get_auth_router(auth_jwt_backend),
+    fastapi_users.get_auth_router(auth_cookie_backend),
 )
 # \register
 auth_router.include_router(
@@ -48,7 +48,7 @@ users_router.include_router(
         UserUpdate,
     )
 )
-current_user = fastapi_users.current_user(active=True)
+current_user = fastapi_users.current_user(active=True,optional=True)
 current_superuser = fastapi_users.current_user(
     active=True,
     superuser=True,

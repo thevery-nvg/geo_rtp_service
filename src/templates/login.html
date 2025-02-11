@@ -44,17 +44,7 @@ Login - FastAPI Фронтенд
             })
             .then(response => {
                 if (!response.ok) {
-                    return response.json().then(err => { throw new Error(err.detail || 'Network response was not ok'); });
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Success:', data);
-                // Установка токена в куки
-                document.Cookie = `access_token=${data.access_token}; path=/; Secure; HttpOnly`;
-                // Перенаправление на защищенную страницу
-<!--                document.location.href = '/';-->
-            })
+                    alert("Login successful")
             .catch((error) => {
                 console.error('Error:', error);
                 alert('Login failed: ' + error.message);
