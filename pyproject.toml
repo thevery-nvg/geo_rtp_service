@@ -20,6 +20,7 @@ httpx = "^0.28.1"
 pyproj = "^3.7.0"
 numpy = "^2.2.1"
 loguru = "^0.7.3"
+minio = "^7.2.15"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.10.0"

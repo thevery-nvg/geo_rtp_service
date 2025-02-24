@@ -16,6 +16,7 @@ from auth.admin import UserAdmin, authentication_backend
 from auth.users_proxy import fastapi_users_proxy_router
 from api import api_router
 from core.core_router import core_router
+from cloud.uploader import upload_router
 
 
 @asynccontextmanager
@@ -37,6 +38,7 @@ app.include_router(users_router, prefix=settings.prefix.api)
 app.include_router(fastapi_users_proxy_router)
 app.include_router(api_router)
 app.include_router(core_router)
+app.include_router(upload_router)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
