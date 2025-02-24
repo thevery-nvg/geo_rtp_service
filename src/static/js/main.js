@@ -182,3 +182,67 @@ function call_autocad() {
         return 'Неудача';  // Если произошла ошибка во время запроса
     });
 }
+
+
+function inspectFiles() {
+    const fileInput = document.getElementById('fileInput');
+
+    if (!fileInput) {
+        console.error("File input element not found!");
+        return;
+    }
+
+    if (fileInput.type !== 'file') {
+        console.error("The element is not a file input!");
+        return;
+    }
+
+    const files = fileInput.files;
+
+    if (files.length === 0) {
+        console.log("No files selected.");
+        return;
+    }
+
+    for (const file of files) {
+        console.log(`File name: ${file.name}`);
+        console.log(`File size: ${file.size} bytes`);
+        console.log(`File type: ${file.type}`);
+        console.log('---');
+    }
+}
+
+
+async function uploadFiles() {
+    const fileInput = document.getElementById('fileInput');
+    const files = fileInput.files;
+
+    if (files.length === 0) {
+        alert('Please select at least one file.');
+        return;
+    }
+
+    const formData = new FormData();
+    for (const file of files) {
+        formData.append('files', file); // 'files' должно совпадать с именем параметра в бэкенде
+    }
+
+    try {
+        const response = await fetch('/upload', {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log('Upload successful:', result);
+        alert('Files uploaded successfully!');
+    } catch (error) {
+        console.error('Upload failed:', error);
+        alert('Failed to upload files.');
+    }
+}
+
