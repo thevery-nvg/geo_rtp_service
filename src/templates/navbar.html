@@ -3,7 +3,7 @@
         <button class="ui-btn" onclick="root_redirect()"><span>Главная</span></button>
     </li>
     <li>
-        <button class="ui-btn"><span>О сервисе</span></button>
+        <button class="ui-btn" onclick="upload_redirect()"><span>Upload</span></button>
     </li>
     <li>
         <button class="ui-btn" onclick="snake_redirect()"><span>Змейка</span></button>
@@ -24,6 +24,9 @@
     }
      function snake_redirect() {
       document.location.href = '/snake'
+    }
+     function upload_redirect() {
+      document.location.href = '/upload'
     }
 </script>
 

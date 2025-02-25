@@ -216,6 +216,9 @@ function inspectFiles() {
 async function uploadFiles() {
     const fileInput = document.getElementById('fileInput');
     const files = fileInput.files;
+    const progressContainer = document.getElementById('progressContainer');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
 
     if (files.length === 0) {
         alert('Please select at least one file.');
@@ -224,13 +227,30 @@ async function uploadFiles() {
 
     const formData = new FormData();
     for (const file of files) {
-        formData.append('files', file); // 'files' должно совпадать с именем параметра в бэкенде
+        formData.append('files', file);
     }
+
+    // Показываем контейнер прогресса
+    progressContainer.style.display = 'block';
+    progressBar.style.width = '0%';
+    progressText.textContent = '0%';
 
     try {
         const response = await fetch('/upload', {
             method: 'POST',
             body: formData,
+            // Используем XMLHttpRequest для отслеживания прогресса
+            xhr: function() {
+                const xhr = new XMLHttpRequest();
+                xhr.upload.onprogress = function(event) {
+                    if (event.lengthComputable) {
+                        const percentComplete = (event.loaded / event.total) * 100;
+                        progressBar.style.width = percentComplete + '%';
+                        progressText.textContent = percentComplete.toFixed(2) + '%';
+                    }
+                };
+                return xhr;
+            }
         });
 
         if (!response.ok) {
@@ -238,10 +258,24 @@ async function uploadFiles() {
         }
 
         const result = await response.json();
+
+        // Устанавливаем прогресс на 100%
+        progressBar.style.width = '100%';
+        progressText.textContent = '100%';
+
         console.log('Upload successful:', result);
-        alert('Files uploaded successfully!');
+
+        // Скрываем прогресс-бар через некоторое время
+        setTimeout(() => {
+            progressContainer.style.display = 'none';
+            alert('Files uploaded successfully!');
+        }, 1000);
+
     } catch (error) {
         console.error('Upload failed:', error);
+
+        // В случае ошибки скрываем прогресс-бар
+        progressContainer.style.display = 'none';
         alert('Failed to upload files.');
     }
 }
