@@ -33,6 +33,9 @@ class Admin(BaseModel):
     token: str
     secret: str
 
+class Cloud(BaseModel):
+    url:str
+
 
 class AccessToken(BaseModel):
     lifetime_seconds: int = 3600
@@ -57,6 +60,7 @@ class Settings(BaseSettings):
     db: DBConfig
     access_token: AccessToken = AccessToken()
     admin: Admin
+    cloud: Cloud
     jwt: JWT = JWT()
 
 
