@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
-
+from fastapi.responses import RedirectResponse
 import uvicorn
 
 from core.config import settings
@@ -55,6 +55,11 @@ admin.add_view(UserAdmin)
 @app.exception_handler(404)
 async def custom_404_handler(request: Request, _):
     return templates.TemplateResponse("404.html", {"request": request})
+
+
+@app.exception_handler(401)
+async def custom_401_handler(request: Request, _):
+    return RedirectResponse("/login")
 
 
 if __name__ == "__main__":
