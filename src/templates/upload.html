@@ -5,24 +5,21 @@ Upload - FastAPI Фронтенд
 {% endblock %}
 
 {% block content %}
-<!--<form action="/upload" method="post" enctype="multipart/form-data">-->
-<!--    <input type="file" name="files" multiple>-->
-<!--    <button type="submit">Upload</button>-->
-<!--</form>-->
+<div class="upload-button-container">
+  <button id="uploadButton" class="upload-button">
+    <span id="uploadText">Send</span>
+    <svg id="uploadIcon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 5V19" stroke="#F00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M5 12H19" stroke="#F00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <ul id="fileList"></ul>
+    <button id="uploadFilesButton" class="upload-files-button">Upload</button>
+    <div id="progressBar" class="progress-bar">
+      <div id="progressBarFill" class="progress-bar-fill"></div>
+    </div>
+  </button>
 
-
-<!--<input  class="labelFile ui-btn " type="file" id="fileInput" multiple>-->
-<!--<div>-->
-<!--    <button class="uploadBtn ui-btn" id="uploadButton" onclick="uploadFiles()">Upload Files</button>-->
-<!--</div>-->
-
-<input class="labelFile ui-btn" type="file" id="fileInput" multiple>
-<div>
-    <button class="uploadBtn ui-btn" id="uploadButton" onclick="uploadFiles()">Upload Files</button>
-</div>
-<div id="progressContainer" class="progress-container" style="display: none;">
-    <div class="progress-bar" id="progressBar"></div>
-    <div class="progress-text" id="progressText">0%</div>
+  <input type="file" id="fileInput" multiple style="display:none;" />
 </div>
 
 

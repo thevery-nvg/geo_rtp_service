@@ -18,7 +18,7 @@ cloud=Path.cwd().joinpath("cloud")
 
 
 @upload_router.get("/upload", response_class=HTMLResponse)
-async def upload_page(request: Request,user: User = Depends(current_user_strict)):
+async def upload_page(request: Request):
     return templates.TemplateResponse("upload.html", {"request": request})
 
 

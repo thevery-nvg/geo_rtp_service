@@ -1,35 +1,3 @@
-
-async function fetchAndDisplayPlot() {
-    try {
-        // Отправляем GET-запрос к эндпоинту /api/plot
-        const response = await fetch('/api/plot');
-
-        // Проверяем, успешен ли ответ
-        if (!response.ok) {
-            throw new Error('Ошибка сети: ' + response.statusText);
-        }
-
-        // Получаем данные изображения в виде Blob
-        const blob = await response.blob();
-
-        // Создаём временный URL для Blob
-        const imageUrl = URL.createObjectURL(blob);
-
-        // Устанавливаем источник изображения на полученный URL
-        const imgElement = document.getElementById('plotImage');
-        imgElement.src = imageUrl;
-
-        // Опционально: освобождаем URL после загрузки изображения
-        imgElement.onload = () => {
-            URL.revokeObjectURL(imageUrl);
-        };
-
-    } catch (error) {
-        console.error('Ошибка при загрузке графика:', error);
-        alert('Не удалось загрузить график. Проверьте консоль для деталей.');
-    }
-}
-
 async function sendData() {
     const input = document.getElementById('input').value;
     if (input.trim() === '') {
@@ -162,26 +130,6 @@ function downloadData() {
 }
 
 
-
-function call_autocad() {
-    const button = document.getElementById('loadPlotBtn');
-    return fetch('/api/draw_tomsk', {
-        method: 'GET',
-    })
-    .then(response => {
-        if (response.ok) {
-            window.alert("Успех!");
-
-        } else {
-            window.alert("Неудача!");
-
-        }
-    })
-    .catch(error => {
-        console.error('Ошибка:', error);
-        return 'Неудача';  // Если произошла ошибка во время запроса
-    });
-}
 
 
 function inspectFiles() {
@@ -330,3 +278,110 @@ async function sendData_ready() {
     }
 
 }
+
+
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  const uploadButton = document.getElementById('uploadButton');
+  const fileInput = document.getElementById('fileInput');
+  const fileList = document.getElementById('fileList');
+  const uploadFilesButton = document.getElementById('uploadFilesButton');
+  const progressBar = document.getElementById('progressBar');
+  const progressBarFill = document.getElementById('progressBarFill');
+  const uploadText = document.getElementById('uploadText');
+  const uploadIcon = document.getElementById('uploadIcon');
+
+  let filesArray = [];
+  let expanded = false;
+
+  uploadButton.addEventListener('click', () => {
+    if (!expanded) {
+      fileInput.click();
+    } else {
+      uploadFiles(filesArray);
+    }
+  });
+
+  fileInput.addEventListener('change', () => {
+    filesArray = Array.from(fileInput.files);
+    fileList.innerHTML = '';
+
+    filesArray.forEach(file => {
+      const listItem = document.createElement('li');
+      listItem.textContent = `${file.name} (${formatBytes(file.size)})`;
+      fileList.appendChild(listItem);
+    });
+
+    expandButton();
+  });
+
+  function expandButton() {
+    expanded = true;
+    uploadButton.classList.add('expanded');
+    fileList.style.display = 'block';
+    uploadFilesButton.style.display = 'block';
+    uploadText.style.display = 'none';
+    uploadIcon.style.display = 'none';
+  }
+
+  function collapseButton() {
+    expanded = false;
+    uploadButton.classList.remove('expanded');
+    fileList.style.display = 'none';
+    uploadFilesButton.style.display = 'none';
+    uploadText.style.display = 'block';
+    uploadIcon.style.display = 'block';
+  }
+
+  uploadFilesButton.addEventListener('click', () => {
+    if (filesArray.length > 0) {
+      uploadFiles(filesArray);
+    } else {
+      alert('Please select files to upload.');
+    }
+  });
+
+  async function uploadFiles(files) {
+    const formData = new FormData();
+    for (const file of files) {
+        formData.append('files', file);
+    }
+
+        try {
+        const response = await fetch('/upload', {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const result = await response.json();
+
+        console.log('Upload successful:', result);
+        console.log('Upload successful:', response);
+
+
+
+    } catch (error) {
+        console.error('Upload failed:', error);
+        alert('Failed to upload files.');
+    }
+
+    }
+
+
+
+  function formatBytes(bytes, decimals = 2) {
+    if (bytes === 0) return '0 Bytes';
+
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+  }
+});
