@@ -248,58 +248,46 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  async function uploadFiles(files) {
+async function uploadFiles(files) {
     const formData = new FormData();
     for (const file of files) {
         formData.append('files', file);
     }
 
-        try {
-        const response = await fetch('/upload', {
-            method: 'POST',
-            body: formData,
-        });
+    const xhr = new XMLHttpRequest();
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+    // Отслеживаем прогресс загрузки
+    xhr.upload.addEventListener('progress', (event) => {
+        if (event.lengthComputable) {
+            const totalSize = Array.from(files).reduce((acc, file) => acc + file.size, 0);
+            const percentComplete = (event.loaded / totalSize) * 100;
+            progressBarFill.style.width = `${percentComplete}%`;
         }
-        const result = await response.json();
+    });
 
-        console.log('Upload successful:', result);
-
-
-
-
-    } catch (error) {
-        console.error('Upload failed:', error);
-        alert('Failed to upload files.');
-    }
-
-//Фейковый прогресс бар
-    progressBar.style.display = 'block';
-    let uploadedFiles = 0;
-
-    files.forEach(file => {
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += 10;
-        progressBarFill.style.width = `${progress}%`;
-
-        if (progress >= 100) {
-          clearInterval(interval);
-          uploadedFiles++;
-
-          if (uploadedFiles === files.length) {
+    xhr.addEventListener('load', () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            const result = JSON.parse(xhr.responseText);
+            console.log('Upload successful:', result);
             alert('All files uploaded!');
             progressBar.style.display = 'none';
             progressBarFill.style.width = '0%';
             collapseButton();
-          }
+        } else {
+            throw new Error(`HTTP error! status: ${xhr.status}`);
         }
-      }, 300);
     });
-//Фейковый прогресс бар
-    }
+
+    xhr.addEventListener('error', () => {
+        console.error('Upload failed');
+        alert('Failed to upload files.');
+    });
+
+    xhr.open('POST', '/upload', true);
+    xhr.send(formData);
+}
+
+
 
 
 
