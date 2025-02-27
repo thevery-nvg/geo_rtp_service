@@ -5,20 +5,38 @@ Login - FastAPI Фронтенд
 {% endblock %}
 
 {% block content %}
+<style>
+    .input-reg {
+  border: none;
+  outline: none;
+  border-radius: 15px;
+  padding: 1em;
+  background-color: #ccc;
+  box-shadow: inset 2px 5px 10px rgba(0,0,0,0.3);
+  transition: 300ms ease-in-out;
+}
+
+.input-reg:focus {
+  background-color: white;
+  transform: scale(1.05);
+  box-shadow: 13px 13px 100px #969696,
+             -13px -13px 100px #ffffff;
+}
+</style>
+
 <div class="modal">
-    <form class="form" id="loginForm">
+    <form class="form" id="loginForm" method="POST">
   <span class="input-span">
     <label for="email" class="label">Email</label>
-    <input type="email" name="email" id="email"
-    /></span>
+    <input type="text" name="email" id="email" class="input-reg">
+  </span>
         <span class="input-span">
     <label for="password" class="label">Password</label>
-    <input type="password" name="password" id="password"
-    /></span>
+    <input type="password" name="password" id="password" class="input-reg">
+        </span>
         <span class="span"><a href="#">Forgot password?</a></span>
-<!--          <input class="submit" type="submit" value="Log in" />-->
-        <button type="submit" class="ui-btn"  id="loginButton"><span>Log in</span></button>
-        <span class="span">Don't have an account? <a href="#">Sign up</a></span>
+        <button type="submit" class="ui-btn" id="loginButton"><span>Log in</span></button>
+        <span class="span">Don't have an account? <a href="/register_proxy">Sign up</a></span>
     </form>
 </div>
 <script>
