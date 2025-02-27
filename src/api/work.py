@@ -1,7 +1,7 @@
 from fastapi import Request, APIRouter
 from .schemas import TransformRequest
 from api.services.convert_vba import conv_coordinates_full
-from api.services.geo import raw_decode, geo_decode_gpx, google_decode
+from api.services.geo import raw_decode, geo_decode_gpx, google_decode, ready_data
 import json
 from api.services.tomsk_autocad import autocad_decode_api
 from loguru import logger
@@ -55,3 +55,17 @@ async def try_parse_vba_json(request: Request):
     # возможно стоит возвращать  output,потом будет видно работает или нет.
     # Но вроде работало
     return a
+
+
+@api_router.post("/geocode_list_ready")
+async def geocode_list_ready(request: Request):
+    d = await request.json()
+    x = ready_data(d["address"], screen=True)
+    return x
+
+
+@api_router.post("/geocode_gpx_ready")
+async def geocode_gpx_ready(request: Request):
+    d = await request.json()
+    x = ready_data(d["address"])
+    return geo_decode_gpx(x)

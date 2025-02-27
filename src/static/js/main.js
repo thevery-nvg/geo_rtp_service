@@ -280,3 +280,53 @@ async function uploadFiles() {
     }
 }
 
+
+async function sendData_ready() {
+    const input = document.getElementById('input').value;
+    if (input.trim() === '') {
+    alert('Поле не должно быть пустым!');
+    return; // Выходим из функции, если поле пустое
+}
+    const hiddenField = document.getElementById('hiddenField');
+    const coordinatesList = document.getElementById('coordinatesList');
+
+    try {
+        const response = await fetch('/api/geocode_list_ready', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ address: input }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Ошибка при отправке запроса');
+        }
+
+        const data = await response.json();
+        displayCoordinates(data)
+    } catch (error) {
+        coordinatesList.textContent = 'Произошла ошибка: ' + error.message;
+    }
+
+    try {
+        const response = await fetch('/api/geocode_gpx_ready', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ address: input }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Ошибка при отправке запроса');
+        }
+
+        const data = await response.json();
+        hiddenField.value = JSON.stringify(data, null, 2);
+
+    } catch (error) {
+        hiddenField.textContent = 'Произошла ошибка: ' + error.message;
+    }
+
+}

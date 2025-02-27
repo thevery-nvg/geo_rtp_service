@@ -201,6 +201,23 @@ def decimal_degrees_full_form(x, y):
     return f"N{zfillr(str(x))}{degrees_symbol}E{zfillr(str(y))}{degrees_symbol}"
 
 
+def ready_data(data, screen=False):
+    degrees_symbol = '° '
+    data = [s for s in data.split('\n') if len(s) > 0]
+    p = re.compile(r'\d{2}[\.,]\d{3,5}')
+    sc=[]
+    out=[]
+    for s in data:
+        lat = re.findall(p, s)[0].replace(',', '.')
+        lon = re.findall(p, s)[1].replace(',', '.')
+        sc.append(f"N{zfillr(str(lat))}{degrees_symbol}E{zfillr(str(lon))}{degrees_symbol}")
+        out.append((float(lat), float(lon)))
+    if screen:
+        return sc
+    else:
+        return out
+
+
 if __name__ == '__main__':
     degrees_symbol = '° '
     minutes_symbol = "´"
