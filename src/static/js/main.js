@@ -257,10 +257,13 @@ async function uploadFiles(files) {
     const xhr = new XMLHttpRequest();
 
     // Отслеживаем прогресс загрузки
+    progressBar.style.display = 'block';
     xhr.upload.addEventListener('progress', (event) => {
         if (event.lengthComputable) {
             const totalSize = Array.from(files).reduce((acc, file) => acc + file.size, 0);
+            console.log(totalSize);
             const percentComplete = (event.loaded / totalSize) * 100;
+            console.log(percentComplete);
             progressBarFill.style.width = `${percentComplete}%`;
         }
     });
