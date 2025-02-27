@@ -360,7 +360,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const result = await response.json();
 
         console.log('Upload successful:', result);
-        console.log('Upload successful:', response);
+
 
 
 
@@ -369,6 +369,30 @@ document.addEventListener('DOMContentLoaded', () => {
         alert('Failed to upload files.');
     }
 
+//Фейковый прогресс бар
+    progressBar.style.display = 'block';
+    let uploadedFiles = 0;
+
+    files.forEach(file => {
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 10;
+        progressBarFill.style.width = `${progress}%`;
+
+        if (progress >= 100) {
+          clearInterval(interval);
+          uploadedFiles++;
+
+          if (uploadedFiles === files.length) {
+            alert('All files uploaded!');
+            progressBar.style.display = 'none';
+            progressBarFill.style.width = '0%';
+            collapseButton();
+          }
+        }
+      }, 300);
+    });
+//Фейковый прогресс бар
     }
 
 
