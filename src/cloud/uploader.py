@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, Form, Request
+from fastapi import APIRouter, UploadFile, File, Form, Request, Depends
 import shutil
 from typing import List
 
@@ -6,6 +6,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, FileResponse
 from pathlib import Path
+from auth import current_user_strict
+from auth.models import User
 
 upload_router = APIRouter(
     tags=["Upload"])
@@ -16,7 +18,7 @@ cloud=Path.cwd().joinpath("cloud")
 
 
 @upload_router.get("/upload", response_class=HTMLResponse)
-async def upload_page(request: Request):
+async def upload_page(request: Request,user: User = Depends(current_user_strict)):
     return templates.TemplateResponse("upload.html", {"request": request})
 
 

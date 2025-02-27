@@ -49,6 +49,7 @@ users_router.include_router(
     )
 )
 current_user = fastapi_users.current_user(active=True,optional=True)
+current_user_strict = fastapi_users.current_user(active=True)
 current_superuser = fastapi_users.current_user(
     active=True,
     superuser=True,
