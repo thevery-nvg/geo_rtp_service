@@ -10,7 +10,7 @@ from auth import current_user_strict
 from auth.models import User
 from core.config import settings
 from loguru import logger
-from services import format_size
+from .services import format_size
 
 upload_router = APIRouter(
     tags=["Upload"])
