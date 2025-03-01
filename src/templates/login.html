@@ -41,50 +41,59 @@ Login - FastAPI Фронтенд
 </div>
 
 <script>
-    document.getElementById('loginForm').addEventListener('submit', function(event) {
-        event.preventDefault(); // Предотвращаем отправку формы
+   document.getElementById('loginForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // Предотвращаем отправку формы
 
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
 
-        // Создание строки с параметрами
-        const params = new URLSearchParams();
-        params.append('username', email);
-        params.append('password', password);
+    // Создание строки с параметрами
+    const params = new URLSearchParams();
+    params.append('username', email);
+    params.append('password', password);
+    console.log(params.toString());
 
-        // Отправка данных на API
-        fetch('/api/auth/login', {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: params.toString(),
-            credentials: 'include', // Важно для работы с куками
-        })
-        .then(response => {
-            if (response.ok) {
-                // Успешный вход
-                return response.json(); // Парсим JSON-ответ
+    // Отправка данных на API
+    fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: params.toString(),
+        credentials: 'include', // Важно для работы с куками
+    })
+    .then(response => {
+        if (response.ok) {
+            // Если статус 204 No Content, не пытаемся парсить JSON
+            if (response.status === 204) {
+                console.log('Login successful, no content returned');
+                return null; // Возвращаем null, так как тело ответа пустое
             } else {
-                throw new Error('Login failed: ' + response.statusText);
+                // Если статус не 204, парсим JSON
+                return response.json();
             }
-        })
-        .then(data => {
-            // Обработка успешного входа
+        } else {
+            throw new Error('Login failed: ' + response.statusText);
+        }
+    })
+    .then(data => {
+        // Обработка успешного входа
+        if (data) {
             console.log('Login successful:', data);
 
             // Сохраняем токен в localStorage (если используется JWT)
             if (data.access_token) {
                 localStorage.setItem('access_token', data.access_token);
             }
+        }
 
-            // Перенаправляем пользователя на защищенную страницу
-            window.location.href = '/upload'; // Замените на нужный URL
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
+        // Перенаправляем пользователя на защищенную страницу
+        window.location.href = '/upload'; // Замените на нужный URL
+    })
+    .catch(error => {
+        console.log('Error:', error);
     });
+});
 </script>
 {% endblock %}
