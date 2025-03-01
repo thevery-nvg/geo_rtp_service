@@ -26,47 +26,66 @@ Login - FastAPI Фронтенд
 
 <div class="modal">
     <form class="form" id="loginForm" method="POST">
-  <span class="input-span">
-    <label for="email" class="label">Email</label>
-    <input type="text" name="email" id="email" class="input-reg">
-  </span>
         <span class="input-span">
-    <label for="password" class="label">Password</label>
-    <input type="password" name="password" id="password" class="input-reg">
+            <label for="email" class="label">Email</label>
+            <input type="text" name="email" id="email" class="input-reg">
+        </span>
+        <span class="input-span">
+            <label for="password" class="label">Password</label>
+            <input type="password" name="password" id="password" class="input-reg">
         </span>
         <span class="span"><a href="#">Forgot password?</a></span>
         <button type="submit" class="ui-btn" id="loginButton"><span>Log in</span></button>
         <span class="span">Don't have an account? <a href="/register_proxy">Sign up</a></span>
     </form>
 </div>
+
 <script>
     document.getElementById('loginForm').addEventListener('submit', function(event) {
-            event.preventDefault(); // Предотвращаем отправку формы
+        event.preventDefault(); // Предотвращаем отправку формы
 
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
 
-            // Создание строки с параметрами
-            const params = new URLSearchParams();
-            params.append('username', email);
-            params.append('password', password);
+        // Создание строки с параметрами
+        const params = new URLSearchParams();
+        params.append('username', email);
+        params.append('password', password);
 
-            // Отправка данных на API
-            fetch('/api/auth/login', {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: params.toString(),
-            })
-            .then(response => {
-                if (!response.ok) {
-                    alert("Login successful")
-            .catch((error) => {
-                console.error('Error:', error);
-                alert('Login failed: ' + error.message);
-            });
+        // Отправка данных на API
+        fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: params.toString(),
+            credentials: 'include', // Важно для работы с куками
+        })
+        .then(response => {
+            if (response.ok) {
+                // Успешный вход
+                return response.json(); // Парсим JSON-ответ
+            } else {
+                throw new Error('Login failed: ' + response.statusText);
+            }
+        })
+        .then(data => {
+            // Обработка успешного входа
+            console.log('Login successful:', data);
+
+            // Сохраняем токен в localStorage (если используется JWT)
+            if (data.access_token) {
+                localStorage.setItem('access_token', data.access_token);
+            }
+
+            // Перенаправляем пользователя на защищенную страницу
+            window.location.href = '/upload'; // Замените на нужный URL
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            window.location.href = '/upload'; // Замените на нужный URL
         });
+    });
 </script>
 {% endblock %}
