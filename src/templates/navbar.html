@@ -13,7 +13,7 @@
         <button class="ui-btn" onclick="login_redirect()"  id="login-button"><span>Log in
             [{{user}}]</span></button>
         {% else %}
-        <button class="ui-btn" id="logout-button" ><span>Log out [{{user.email}}]</span></button>
+        <button class="ui-btn" id="logout-button"  ><span>Log out [{{user.email}}]</span></button>
         {% endif %}
     </li>
 </ul>
@@ -34,5 +34,6 @@ function snake_redirect() {
 function upload_redirect() {
     document.location.href = '/upload';
 }
+
 
 </script>

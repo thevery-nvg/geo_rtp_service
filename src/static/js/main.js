@@ -191,9 +191,7 @@ async function sendData_ready() {
 
 
 async function logout() {
-console.log('Logout successful');
     try {
-    console.log('Try');
         const response = await fetch('/auth/logout', {
             method: 'POST',
             headers: {
@@ -201,29 +199,24 @@ console.log('Logout successful');
             },
             credentials: 'include', // Важно для работы с куками
         });
-
         if (response.ok) {
             // Успешный выход
-            console.log('Logout successful');
-
             // Очищаем куки вручную
-            document.cookie = "fastapi-users-auth=; expires=Thu, Max-Age=-1;';
-
+            document.cookie = "fastapi_session=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/;";
             // Очищаем localStorage (если используется JWT)
             localStorage.removeItem('access_token');
-
             // Перенаправляем пользователя на главную страницу
-            window.location.href = '/';
+            //window.location.href = '/';
         } else {
             // Обработка ошибки, если выход не удался
             console.error('Logout failed:', response.statusText);
             alert('Logout failed: ' + response.statusText);
         }
     }
-    //catch (error) {
+    catch (error) {
        // console.error('Error during logout:', error);
         //alert('Error during logout: ' + error.message);}
-        }
+        }}
 
 document.getElementById('logout-button').addEventListener('click', logout);
 //из файла navbar
