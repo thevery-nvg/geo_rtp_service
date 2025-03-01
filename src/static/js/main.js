@@ -199,7 +199,7 @@ async function logout() {
             },
             credentials: 'include', // Важно для работы с куками
         });
-
+console.log('Logout successful');
         if (response.ok) {
             // Успешный выход
             console.log('Logout successful');
