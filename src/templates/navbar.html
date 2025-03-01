@@ -10,9 +10,10 @@
     </li>
     <li class="move-left">
         {% if not user %}
-        <button class="ui-btn" onclick="login_redirect()"><span>Log in {{user}}</span></button>
+        <button class="ui-btn" onclick="login_redirect()"  id="login-button"><span>Log in
+            [{{user}}]</span></button>
         {% else %}
-        <button class="ui-btn" id="logout-button"><span>Log out {{user}}</span></button>
+        <button class="ui-btn" id="logout-button" ><span>Log out [{{user.email}}]</span></button>
         {% endif %}
     </li>
 </ul>
