@@ -9,26 +9,29 @@
         <button class="ui-btn" onclick="snake_redirect()"><span>Змейка</span></button>
     </li>
     <li class="move-left">
-        <button class="ui-btn"
-                onclick="login_redirect()"><span>Log in</span></button>
+        {% if not user %}
+        <button class="ui-btn" onclick="login_redirect()"><span>Log in {{user}}</span></button>
+        {% else %}
+        <button class="ui-btn" id="logout-button"><span>Log out {{user}}</span></button>
+        {% endif %}
     </li>
 </ul>
 
-
 <script language="JavaScript">
     function root_redirect() {
-      document.location.href = '/'
+        document.location.href = '/';
     }
-      function login_redirect() {
-      document.location.href = '/login_proxy'
-    }
-     function snake_redirect() {
-      document.location.href = '/snake'
-    }
-     function upload_redirect() {
-      document.location.href = '/upload'
-    }
+
+function login_redirect() {
+    document.location.href = '/login_proxy';
+}
+
+function snake_redirect() {
+    document.location.href = '/snake';
+}
+
+function upload_redirect() {
+    document.location.href = '/upload';
+}
+
 </script>
-
-
-

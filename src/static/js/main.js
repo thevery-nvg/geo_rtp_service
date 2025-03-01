@@ -187,8 +187,45 @@ async function sendData_ready() {
 
 
 
+//из файла navbar
 
-document.addEventListener('DOMContentLoaded', () => {
+
+async function logout() {
+    try {
+        const response = await fetch('/auth/logout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include', // Важно для работы с куками
+        });
+
+        if (response.ok) {
+            // Успешный выход
+            console.log('Logout successful');
+
+            // Очищаем куки вручную
+            document.cookie = "fastapi-users-auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
+            // Очищаем localStorage (если используется JWT)
+            localStorage.removeItem('access_token');
+
+            // Перенаправляем пользователя на главную страницу
+            window.location.href = '/';
+        } else {
+            // Обработка ошибки, если выход не удался
+            console.error('Logout failed:', response.statusText);
+            alert('Logout failed: ' + response.statusText);
+        }
+    } catch (error) {
+        console.error('Error during logout:', error);
+        alert('Error during logout: ' + error.message);}}
+
+document.getElementById('logout-button').addEventListener('click', logout);
+//из файла navbar
+
+
+ document.addEventListener('DOMContentLoaded', () => {
   const uploadButton = document.getElementById('uploadButton');
   const fileInput = document.getElementById('fileInput');
   const fileList = document.getElementById('fileList');
@@ -261,7 +298,6 @@ async function uploadFiles(files) {
     xhr.upload.addEventListener('progress', (event) => {
         if (event.lengthComputable) {
             const totalSize = Array.from(files).reduce((acc, file) => acc + file.size, 0);
-            console.log(totalSize);
             const percentComplete = (event.loaded / totalSize) * 100;
             console.log(percentComplete);
             progressBarFill.style.width = `${percentComplete}%`;
