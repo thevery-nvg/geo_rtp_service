@@ -2,7 +2,7 @@ from fastapi.security import HTTPBearer
 from fastapi_users import FastAPIUsers
 
 from .schemas import UserRead, UserCreate, UserUpdate
-from .backend import auth_jwt_backend, auth_cookie_backend
+from .backend import auth_cookie_backend
 from .user_manager import get_user_manager
 from .models import User
 

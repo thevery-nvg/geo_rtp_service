@@ -59,7 +59,7 @@ async def custom_404_handler(request: Request, _):
 
 @app.exception_handler(401)
 async def custom_401_handler(request: Request, _):
-    return RedirectResponse("/login")
+    return RedirectResponse("/login_proxy")
 
 
 if __name__ == "__main__":

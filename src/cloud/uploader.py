@@ -21,20 +21,21 @@ cloud = Path(settings.cloud.url)
 
 
 @upload_router.get("/upload", response_class=HTMLResponse)
-async def upload_page(request: Request):
-    return templates.TemplateResponse("upload.html", {"request": request})
+async def upload_page(request: Request,user: User = Depends(current_user_strict)):
+    return templates.TemplateResponse("upload.html",  {"request": request, "user": user})
 
 
 @upload_router.post("/upload")
-async def upload_files(files: List[UploadFile] = File(...), user="Aleshka"):
+async def upload_files(files: List[UploadFile] = File(...),user: User = Depends(current_user_strict)):
     logger.info(f"{user} is uploading {len(files)} files; size = "
                 f"{format_size(sum([file.size for file in files]))};{[file.filename for file in files]}")
-    if not cloud.joinpath(user).exists():
-        cloud.joinpath(user).mkdir()
+    if not cloud.joinpath(str(user.id)).exists():
+        cloud.joinpath(str(user.id)).mkdir()
     date = str(datetime.now().date())
-    if not cloud.joinpath(user).joinpath(date).exists():
-        cloud.joinpath(user).joinpath(date).mkdir()
+    if not cloud.joinpath(str(user.id)).joinpath(date).exists():
+        cloud.joinpath(str(user.id)).joinpath(date).mkdir()
     for file in files:
-        with open(cloud.joinpath(user).joinpath(date).joinpath(file.filename), 'wb') as buffer:
+        with (open(cloud.joinpath(str(user.id)).joinpath(date).joinpath(file.filename), 'wb') as
+              buffer):
             shutil.copyfileobj(file.file, buffer)
     return {"filename": [file.filename for file in files]}

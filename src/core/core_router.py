@@ -1,9 +1,7 @@
 from fastapi import APIRouter, Request, Depends
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from typing import Optional
-
 from auth import current_user
 from auth.models import User
 
@@ -22,10 +20,10 @@ favicon_path = "src\\img\\favicon.png"
 
 
 @core_router.get("/", response_class=HTMLResponse)
-async def read_root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+async def read_root(request: Request, user: User = Depends(current_user)):
+    return templates.TemplateResponse("index.html", {"request": request, "user": user})
 
 
-@core_router.get(path="/snake", response_class=HTMLResponse,)
-async def snake(request: Request,user: User = Depends(current_user)):
-    return templates.TemplateResponse("snake.html", {"request": request,"user":user})
+@core_router.get(path="/snake", response_class=HTMLResponse, )
+async def snake(request: Request, user: User = Depends(current_user)):
+    return templates.TemplateResponse("snake.html", {"request": request, "user": user})

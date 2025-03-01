@@ -1,5 +1,4 @@
-import logging
-from typing import Optional, Any, Union
+from typing import Any, Union
 import re
 from fastapi_users import BaseUserManager, IntegerIDMixin, InvalidPasswordException
 from .models import User
@@ -25,7 +24,7 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
     async def on_after_register(self, user: User, request: Request | None = None) -> None:
         """Perform logic after successful user registration."""
 
-        logger.info(f'User [{user.id}] has registered.')
+        logger.info(f'User [{user.id}] {user.email} has registered.')
         logger.debug(f'Request: {request}.')
 
     async def on_after_update(self, user: User, update_dict: dict[str, Any],
@@ -117,19 +116,24 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
         min_chars = 12
 
         if len(password) < min_chars:
+            logger.warning(f'Password should be at least {min_chars} characters.')
             raise InvalidPasswordException(
                 reason=f'Password should be at least {min_chars} characters.')
 
         if re.search('[0-9]', password) is None:
+            logger.warning('Password should include digits.')
             raise InvalidPasswordException(reason='Password should include digits.')
 
         if user.email in password:
+            logger.warning('Password should not contain e-mail.')
             raise InvalidPasswordException(reason='Password should not contain e-mail.')
 
         if re.search('[A-Z]', password) is None:
+            logger.warning('Password should include a capital letter.')
             raise InvalidPasswordException(reason='Password should include a capital letter.')
 
         if re.search('[a-z]', password) is None:
+            logger.warning('Password should include a lower-case letter.')
             raise InvalidPasswordException(reason='Password should include a lower-case letter.')
 
 
