@@ -20,7 +20,6 @@ from cloud.uploader import upload_router
 from loguru import logger
 import sys
 
-
 logger.remove()  # Удаляем стандартный обработчик
 logger.add(sys.stdout, format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}")
 logger.add("logs/main.log", rotation="10 MB")
@@ -73,6 +72,18 @@ async def log_requests(request: Request, call_next):
 
     logger.info(f"Outgoing response: {response.status_code}")
     return response
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    try:
+        response = await call_next(request)
+    except Exception as e:
+        logger.warning(f"Invalid HTTP request received: {e}")
+        raise
+
+    return response
+
 
 @app.exception_handler(404)
 async def custom_404_handler(request: Request, _):
