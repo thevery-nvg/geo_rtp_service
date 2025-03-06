@@ -18,11 +18,8 @@ from api import api_router
 from core.core_router import core_router
 from cloud.uploader import upload_router
 from loguru import logger
+import logging
 import sys
-
-logger.remove()  # Удаляем стандартный обработчик
-logger.add(sys.stdout, format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}")
-logger.add("logs/main.log", rotation="10 MB")
 
 
 @asynccontextmanager
@@ -37,6 +34,7 @@ async def lifespan(application: FastAPI):
 app = FastAPI(
     default_response_class=ORJSONResponse,
     lifespan=lifespan,
+    openapi_url=None
 )
 
 app.include_router(auth_router, prefix=settings.prefix.api)
@@ -54,24 +52,7 @@ admin = Admin(app=app, authentication_backend=authentication_backend,
               session_maker=db_helper.session_factory)
 admin.add_view(UserAdmin)
 
-
 # admin--------------
-
-
-@app.middleware("http")
-async def log_requests(request: Request, call_next):
-    logger.info(f"Incoming request: {request.method} {request.url}")
-    logger.info(f"Headers: {request.headers}")
-    logger.info(f"Body: {await request.body()}")
-
-    try:
-        response = await call_next(request)
-    except Exception as e:
-        logger.error(f"Error occurred: {e}")
-        raise
-
-    logger.info(f"Outgoing response: {response.status_code}")
-    return response
 
 
 @app.middleware("http")
@@ -95,7 +76,31 @@ async def custom_401_handler(request: Request, _):
     return RedirectResponse("/login_proxy")
 
 
+# Перехват логов uvicorn.access
+uvicorn_access_logger = logging.getLogger("uvicorn.access")
+uvicorn_access_logger.handlers = []
+
+
+# Кастомный обработчик для перенаправления логов в loguru
+class InterceptHandler(logging.Handler):
+    def emit(self, record):
+        try:
+            level = logger.level(record.levelname).name
+        except ValueError:
+            level = record.levelno
+
+        # Преобразуем запись лога в строку
+        message = self.format(record)
+        logger.log(level, message)
+
+
+# Добавляем кастомный обработчик
+uvicorn_access_logger.addHandler(InterceptHandler())
+
 if __name__ == "__main__":
+    logger.remove()  # Удаляем стандартный обработчик
+    logger.add(sys.stdout, format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}")
+    logger.add("logs/main.log", rotation="10 MB")
     uvicorn.run(
         "main:app",
         host=settings.run.host,
