@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request, Depends
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from auth import current_user
@@ -17,6 +17,10 @@ favicon_path = "src\\img\\favicon.png"
 # @core_router.get('/favicon.ico', include_in_schema=False)
 # async def favicon():
 #     return FileResponse(favicon_path)
+
+@core_router.get("/favicon.ico")
+async def favicon():
+    return RedirectResponse("https://img.icons8.com/3d-fluency/94/globe-africa.png")
 
 
 @core_router.get("/", response_class=HTMLResponse)
