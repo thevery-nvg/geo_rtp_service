@@ -3,7 +3,6 @@ import random
 from functools import reduce
 from typing import Tuple
 from pyproj import Proj
-import math
 
 wgs84 = Proj('epsg:4326')
 patterns = {
@@ -109,18 +108,6 @@ def geo_decode_gpx(data):
     return output
 
 
-def decimal_degrees_to_latlon(x, y):
-    degrees_symbol = '° '
-    minutes_symbol = "´"
-    seconds_symbol = "´´"
-    lat, lon = wgs84(x, y, inverse=True)
-    lat_deg, lat_min, lat_sec = lat_to_dms(lat)
-    lon_deg, lon_min, lon_sec = lon_to_dms(lon)
-    # return (lat_deg, lat_min, lat_sec), (lon_deg, lon_min, lon_sec)
-    return (f"N{lat_deg}{degrees_symbol}{lat_min}{minutes_symbol}{lat_sec}{seconds_symbol}"
-            f" E{lon_deg}{degrees_symbol}{lon_min}{minutes_symbol}{lon_sec}{seconds_symbol}")
-
-
 def lat_to_dms(lat):
     deg = int(lat)
     min_ = int((lat - deg) * 60)
@@ -133,61 +120,6 @@ def lon_to_dms(lon):
     min_ = int((lon - deg) * 60)
     sec = int((lon - deg - min_ / 60) * 3600)
     return deg, min_, sec
-
-
-def degrees_to_radians(degrees):
-    return degrees * (math.pi / 180)
-
-
-def cross_poductZ(x1, y1, x2, y2):
-    return x1 * y2 - x2 * y1
-
-
-def rotation_direction(latA, lonA, latB, lonB, latC, lonC):
-    vectorAB = [lonB - lonA, latB - latA]
-    vectorBC = [lonC - lonB, latC - latB]
-
-    cross_product = cross_poductZ(vectorAB[0], vectorAB[1], vectorBC[0], vectorBC[1])
-
-    if cross_product > 0:
-        return "Налево"
-    elif cross_product < 0:
-        return "Направо"
-    else:
-        return "На одной прямой"
-
-
-def angle_between_points(latA, lonA, latB, lonB, latC, lonC):
-    latARad = degrees_to_radians(latA)
-    latBRad = degrees_to_radians(latB)
-
-    vectorAB = [(lonB - lonA) * math.cos(latARad), latB - latA]
-    vectorBC = [(lonC - lonB) * math.cos(latBRad), latC - latB]
-
-    dot_product = vectorAB[0] * vectorBC[0] + vectorAB[1] * vectorBC[1]
-
-    lengthAB = math.sqrt(math.pow(vectorAB[0], 2) + math.pow(vectorAB[1], 2))
-    lengthBC = math.sqrt(math.pow(vectorBC[0], 2) + math.pow(vectorBC[1], 2))
-
-    angle_rad = math.acos(dot_product / (lengthAB * lengthBC))
-
-    angle_deg = angle_rad * (180 / math.pi)
-
-    return angle_deg
-
-
-def process_coordinates(coordinates):
-    angles = []
-
-    for i in range(len(coordinates) - 2):
-        latA, lonA = coordinates[i]
-        latB, lonB = coordinates[i + 1]
-        latC, lonC = coordinates[i + 2]
-
-        angle = angle_between_points(latA, lonA, latB, lonB, latC, lonC)
-        angles.append(angle)
-
-    return angles
 
 
 def zfillr(s):
@@ -207,8 +139,8 @@ def ready_data(data, screen=False):
     degrees_symbol = '° '
     data = [s for s in data.split('\n') if len(s) > 0]
     p = re.compile(r'\d{2}[\.,]\d{3,5}')
-    sc=[]
-    out=[]
+    sc = []
+    out = []
     for s in data:
         lat = re.findall(p, s)[0].replace(',', '.')
         lon = re.findall(p, s)[1].replace(',', '.')
