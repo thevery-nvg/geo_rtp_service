@@ -11,12 +11,7 @@ core_router = APIRouter(
 
 core_router.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
-favicon_path = "src\\img\\favicon.png"
 
-
-# @core_router.get('/favicon.ico', include_in_schema=False)
-# async def favicon():
-#     return FileResponse(favicon_path)
 
 @core_router.get("/favicon.ico")
 async def favicon():
