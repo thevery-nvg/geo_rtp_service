@@ -14,6 +14,8 @@ api_router = APIRouter(
 
 @api_router.post("/geocode_list")
 async def geocode_list(request: Request):
+    """Получаем данные из input на странице,возвращается список преобразованных координат в окно
+    output """
     d = await request.json()
     x = raw_decode(d["address"], screen=True)
     return x
@@ -21,6 +23,7 @@ async def geocode_list(request: Request):
 
 @api_router.post("/geocode_gpx")
 async def geocode_gpx(request: Request):
+    """Скачивание"""
     d = await request.json()
     x = raw_decode(d["address"])
     return geo_decode_gpx(x)
@@ -35,6 +38,7 @@ async def google_list(request: Request):
 
 @api_router.post("/google_gpx")
 async def google_gpx(request: Request):
+    """Скачивание"""
     d = await request.json()
     x = google_decode(d["address"])
     return geo_decode_gpx(x)

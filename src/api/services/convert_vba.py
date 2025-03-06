@@ -82,6 +82,7 @@ def convert_coordinates(coordinates: str) -> str:
 
 
 def conv_coordinates_full(s):
+    """ Конечная функция, которая принимает на вход строку UTM и возвращает преобразованное значение."""
     transformed_value = utm_to_latlon(s)
     transformed_value = convert_coordinates(transformed_value)
     return transformed_value

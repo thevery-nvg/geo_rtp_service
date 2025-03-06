@@ -191,6 +191,8 @@ def process_coordinates(coordinates):
 
 
 def zfillr(s):
+    if len(s) > 8:
+        return s[:8]
     return s + "0" * (8 - len(s))
 
 

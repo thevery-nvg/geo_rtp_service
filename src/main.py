@@ -51,7 +51,6 @@ templates = Jinja2Templates(directory="templates")
 admin = Admin(app=app, authentication_backend=authentication_backend,
               session_maker=db_helper.session_factory)
 admin.add_view(UserAdmin)
-
 # admin--------------
 
 
