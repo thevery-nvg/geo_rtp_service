@@ -4,7 +4,6 @@ from api.services.convert_vba import conv_coordinates_full
 from api.services.geo import raw_decode, geo_decode_gpx, google_decode, ready_data
 import json
 from api.services.tomsk_autocad import autocad_decode_api
-from loguru import logger
 
 api_router = APIRouter(
     prefix="/api",

@@ -33,8 +33,15 @@ class Admin(BaseModel):
     token: str
     secret: str
 
+
 class Cloud(BaseModel):
-    url:str
+    url: str
+
+
+class GoogleSheets(BaseModel):
+    table_id: str
+    sheet_ugansk: str
+    sheet_noyabrsk: str
 
 
 class AccessToken(BaseModel):
@@ -61,6 +68,7 @@ class Settings(BaseSettings):
     access_token: AccessToken = AccessToken()
     admin: Admin
     cloud: Cloud
+    google_sheets: GoogleSheets
     jwt: JWT = JWT()
 
 
