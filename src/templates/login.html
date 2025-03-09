@@ -28,7 +28,10 @@ Login - FastAPI Фронтенд
     <form class="form" id="loginForm" method="POST">
         <span class="input-span">
             <label for="email" class="label">Email</label>
-            <input type="text" name="email" id="email" class="input-reg">
+            <input type="text" name="email" id="email" class="input-reg" required maxlength="20"
+                   minlength="6"
+                   pattern="[a-zA-Z0-9._-]+"
+                   title="Имя пользователя должно содержать только буквы и цифры.">
         </span>
         <span class="input-span">
             <label for="password" class="label">Password</label>
