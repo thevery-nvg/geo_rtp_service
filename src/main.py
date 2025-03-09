@@ -17,6 +17,7 @@ from auth.users_proxy import fastapi_users_proxy_router
 from api import api_router
 from core.core_router import core_router
 from cloud.uploader import upload_router
+from google_sheets import google_sheets_router
 from loguru import logger
 import logging
 import sys
@@ -34,7 +35,6 @@ async def lifespan(application: FastAPI):
 app = FastAPI(
     default_response_class=ORJSONResponse,
     lifespan=lifespan,
-    openapi_url=None
 )
 
 app.include_router(auth_router, prefix=settings.prefix.api)
@@ -43,6 +43,7 @@ app.include_router(fastapi_users_proxy_router)
 app.include_router(api_router)
 app.include_router(core_router)
 app.include_router(upload_router)
+app.include_router(google_sheets_router)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")

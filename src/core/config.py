@@ -39,9 +39,10 @@ class Cloud(BaseModel):
 
 
 class GoogleSheets(BaseModel):
-    table_id: str
-    sheet_ugansk: str
-    sheet_noyabrsk: str
+    tableid: str
+    credentialspath: str
+    ugansk: str
+    noyabrsk: str
 
 
 class AccessToken(BaseModel):
@@ -65,11 +66,9 @@ class Settings(BaseSettings):
     run: RunConfig = RunConfig()
     prefix: PrefixConfig = PrefixConfig()
     db: DBConfig
-    access_token: AccessToken = AccessToken()
     admin: Admin
     cloud: Cloud
-    google_sheets: GoogleSheets
-    jwt: JWT = JWT()
+    googlesheets: GoogleSheets
 
 
 settings = Settings()

@@ -2,13 +2,13 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from pathlib import Path
 from core.config import settings
+from fastapi import APIRouter
 
-
-
-
-credentials_file = Path.cwd() / "credentials.json"
-spreadsheet_id = settings.google_sheets.table_id
-noyabrsk = settings.google_sheets.sheet_noyabrsk
+credentials_file = settings.googlesheets.credentialspath
+#Path("D:\\Python\\geo_rtp_service\\src\\google_sheets\\credentials.json")
+spreadsheet_id = settings.googlesheets.tableid
+noyabrsk = settings.googlesheets.noyabrsk
+ugansk = settings.googlesheets.ugansk
 
 # Объект авторизации
 scope = ['https://spreadsheets.google.com/feeds',
@@ -17,10 +17,28 @@ scope = ['https://spreadsheets.google.com/feeds',
 credentials = ServiceAccountCredentials.from_json_keyfile_name(credentials_file, scope)
 client = gspread.authorize(credentials)
 spreadsheet = client.open_by_key(spreadsheet_id)
-sheet = spreadsheet.worksheet(noyabrsk)
-data = sheet.get(pad_values=True)
-print(len(data))
-print(len(data[0]))
-for row in data:
-    print(row)
-    print(len(row))
+
+
+def get_noyabrsk_table():
+    sheet = spreadsheet.worksheet(noyabrsk)
+    data = sheet.get(pad_values=True)
+    return data
+
+
+def get_ugansk_table():
+    sheet = spreadsheet.worksheet(ugansk)
+    data = sheet.get(pad_values=True)
+    return data
+
+
+google_sheets_router = APIRouter()
+
+
+@google_sheets_router.get("/google_sheets_noyabrsk")
+async def get_noyabrsk():
+    return get_noyabrsk_table()
+
+
+@google_sheets_router.get("/google_sheets_ugansk")
+async def get_ugansk():
+    return get_ugansk_table()
