@@ -10,14 +10,12 @@ from fastapi import Depends, Request, Response
 from .schemas import UserCreate
 from loguru import logger
 
-
 if TYPE_CHECKING:
     from fastapi import Request, Depends
 
 
 class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
     """All the ште-based User management logic..."""
-
 
     async def on_after_register(self, user: User, request: Request | None = None) -> None:
         """Perform logic after successful user registration."""
@@ -112,26 +110,26 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
         """
 
         min_chars = 12
-
+        msg = f"User [{user.email}] tried to enter password, but it was not valid.\n"
         if len(password) < min_chars:
-            logger.warning(f'Password should be at least {min_chars} characters.')
+            logger.info(f'{msg}Password should be at least {min_chars}characters.')
             raise InvalidPasswordException(
                 reason=f'Password should be at least {min_chars} characters.')
 
         if re.search('[0-9]', password) is None:
-            logger.warning('Password should include digits.')
+            logger.warning(f'{msg}Password should include digits.')
             raise InvalidPasswordException(reason='Password should include digits.')
 
         if user.email in password:
-            logger.warning('Password should not contain e-mail.')
+            logger.info(f'{msg}Password should not contain e-mail.')
             raise InvalidPasswordException(reason='Password should not contain e-mail.')
 
         if re.search('[A-Z]', password) is None:
-            logger.warning('Password should include a capital letter.')
+            logger.info(f'{msg}Password should include a capital letter.')
             raise InvalidPasswordException(reason='Password should include a capital letter.')
 
         if re.search('[a-z]', password) is None:
-            logger.warning('Password should include a lower-case letter.')
+            logger.info(f'{msg}Password should include a lower-case letter.')
             raise InvalidPasswordException(reason='Password should include a lower-case letter.')
 
 

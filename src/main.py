@@ -100,10 +100,10 @@ uvicorn_access_logger.addHandler(InterceptHandler())
 if __name__ == "__main__":
     logger.remove()  # Удаляем стандартный обработчик
     logger.add(sys.stdout, format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}")
-    logger.add("logs/main.log", rotation="10 MB")
+    logger.add("logs/main.txt", rotation="10 MB")
     uvicorn.run(
         "main:app",
         host=settings.run.host,
         port=settings.run.port,
-        reload=True,
+        workers=2
     )

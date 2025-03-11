@@ -45,17 +45,6 @@ class GoogleSheets(BaseModel):
     noyabrsk: str
 
 
-class AccessToken(BaseModel):
-    lifetime_seconds: int = 3600
-    reset_password_token_secret: str = "sdsdfaadfnjk;lltxcvbtipwwgifgiojn"
-    verification_token_secret: str = "alsfjadfgdddkklofvghnsfdgadfgadfgogn"
-    jwt_secret: str = "alsfjadfgdddkklofvghnsfdgadfgadfgogn"
-
-
-class JWT(BaseModel):
-    secret: str = "alsfjadfgdddkklofvghnsfdgadfgadfgogn"
-
-
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         case_sensitive=False,
