@@ -1,5 +1,5 @@
 from fastapi import Request, APIRouter
-from .schemas import TransformRequest
+from .schemas import TransformRequest, BatchRequest
 from api.services.convert_vba import conv_coordinates_full
 from api.services.geo import raw_decode, geo_decode_gpx, google_decode, ready_data
 import json
@@ -14,7 +14,7 @@ api_router = APIRouter(
 @api_router.post("/geocode_list")
 async def geocode_list(request: Request):
     """Получаем данные из input на странице,возвращается список преобразованных координат в окно
-    output """
+    output"""
     d = await request.json()
     x = raw_decode(d["address"], screen=True)
     return x
@@ -47,6 +47,15 @@ async def google_gpx(request: Request):
 async def transform_value(request: TransformRequest):
     transformed_value = conv_coordinates_full(request.value)
     return {"original": request.value, "transformed": transformed_value}
+
+
+@api_router.post("/transform_batch")
+async def transform_batch(request: BatchRequest):
+    result = {}
+    for key, value in request.data.items():
+        result[key] = conv_coordinates_full(value)
+
+    return {"result": result}
 
 
 @api_router.post("/draw_tomsk")

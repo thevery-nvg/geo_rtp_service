@@ -1,5 +1,4 @@
-from fastapi_users_db_sqlalchemy import (SQLAlchemyBaseUserTable,
-                                         SQLAlchemyUserDatabase)
+from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTable, SQLAlchemyUserDatabase
 
 from core.models.mixins.ID_intpk_mixin import IDIntPKMixin
 
@@ -23,16 +22,10 @@ class User(Base, IDIntPKMixin, SQLAlchemyBaseUserTable[int]):
     email: Mapped[str] = mapped_column(
         String(length=320), unique=True, index=True, nullable=False
     )
-    hashed_password: Mapped[str] = mapped_column(
-        String(length=1024), nullable=False
-    )
+    hashed_password: Mapped[str] = mapped_column(String(length=1024), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-    is_superuser: Mapped[bool] = mapped_column(
-        Boolean, default=False, nullable=False
-    )
-    is_verified: Mapped[bool] = mapped_column(
-        Boolean, default=False, nullable=False
-    )
+    is_superuser: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    is_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     @classmethod
     def get_db(cls, session: "AsyncSession"):
@@ -41,8 +34,7 @@ class User(Base, IDIntPKMixin, SQLAlchemyBaseUserTable[int]):
 
 class AccessToken(Base, SQLAlchemyBaseAccessTokenTable[int]):
     user_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("users.id", ondelete="cascade"),
-        nullable=False
+        Integer, ForeignKey("users.id", ondelete="cascade"), nullable=False
     )
 
     @classmethod

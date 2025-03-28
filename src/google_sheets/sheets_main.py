@@ -1,18 +1,18 @@
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-from pathlib import Path
 from core.config import settings
 from fastapi import APIRouter
 
 credentials_file = settings.googlesheets.credentialspath
-#Path("D:\\Python\\geo_rtp_service\\src\\google_sheets\\credentials.json")
 spreadsheet_id = settings.googlesheets.tableid
 noyabrsk = settings.googlesheets.noyabrsk
 ugansk = settings.googlesheets.ugansk
 
 # Объект авторизации
-scope = ['https://spreadsheets.google.com/feeds',
-         'https://www.googleapis.com/auth/drive']
+scope = [
+    "https://spreadsheets.google.com/feeds",
+    "https://www.googleapis.com/auth/drive",
+]
 
 credentials = ServiceAccountCredentials.from_json_keyfile_name(credentials_file, scope)
 client = gspread.authorize(credentials)
