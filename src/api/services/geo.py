@@ -12,6 +12,31 @@ patterns = {
 }
 
 
+def convert_coordinates_new(coord_str):
+    # Разделяем строку на широту и долготу
+    # Получаем в формате N62.90617° E74.41833°
+    # Возвращаем в формате N62 54.37	E74 25.10
+    parts = coord_str.split()
+
+    # Обрабатываем широту (первая часть)
+    lat_part = parts[0]
+    lat_deg = lat_part.split('°')[0][1:]  # Убираем 'N' и '°'
+    lat_deg_float = float(lat_deg)
+    lat_deg_int = int(lat_deg_float)
+    lat_min = (lat_deg_float - lat_deg_int) * 60
+    lat_str = f"N{lat_deg_int} {lat_min:.2f}"
+
+    # Обрабатываем долготу (вторая часть)
+    lon_part = parts[1]
+    lon_deg = lon_part.split('°')[0][1:]  # Убираем 'E' и '°'
+    lon_deg_float = float(lon_deg)
+    lon_deg_int = int(lon_deg_float)
+    lon_min = (lon_deg_float - lon_deg_int) * 60
+    lon_str = f"E{lon_deg_int} {lon_min:.2f}"
+
+    return f"{lat_str}\t{lon_str}"
+
+
 def clear_data(data: str) -> str:
     return re.sub(r"[^NE0-9.]", "", data.replace(",", "."))
 
@@ -48,7 +73,7 @@ def raw_decode(data, screen=False):
                 x = convert_coordinates_full(f"{p1}{p2}", coord)
                 out_screen.append(decimal_degrees_full_form(x[0], x[1]))
             if screen:
-                return out_screen
+                return [convert_coordinates_new(x) for x in out_screen]
             else:
                 return out
     return []
@@ -69,7 +94,7 @@ def google_decode(data, screen=False):
         res.append(i)
         res_screen.append(decimal_degrees_full_form(i[0], i[1]))
     if screen:
-        return res_screen
+        return [convert_coordinates_new(x) for x in res_screen]
     else:
         return res
 
