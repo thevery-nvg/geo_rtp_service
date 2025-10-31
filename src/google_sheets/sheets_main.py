@@ -5,7 +5,7 @@ from fastapi import APIRouter
 from pathlib import Path
 import json
 import re
-from src.google_sheets.schemas import  NngDataWrite, NngDataGet
+from google_sheets.schemas import  NngDataWrite, NngDataGet
 
 # table_spreadsheet_id = settings.googlesheets.tableid
 db_spreadsheet_id= settings.googlesheets.dbtableid#"1160jfh4-hCgGcMSfMJ6tbbpUSwJFf6VjzTgxKSwjmQ4"

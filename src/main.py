@@ -19,7 +19,7 @@ from cloud.uploader import upload_router
 from core.config import settings
 from core.core_router import core_router
 from core.models import db_helper
-from src.google_sheets.sheets_main import gs_router
+from google_sheets.sheets_main import gs_router
 
 
 @asynccontextmanager
