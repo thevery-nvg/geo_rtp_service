@@ -1,8 +1,10 @@
+import json
+
 from fastapi import Request, APIRouter
-from .schemas import TransformRequest, BatchRequest
+
+from api.schemas import TransformRequest, BatchRequest
 from api.services.convert_vba import conv_coordinates_full
 from api.services.geo import raw_decode, geo_decode_gpx, google_decode, ready_data
-import json
 from api.services.tomsk_autocad import autocad_decode_api
 
 api_router = APIRouter(
@@ -58,7 +60,6 @@ async def transform_batch(request: BatchRequest):
         result[key] = conv_coordinates_full(value)
 
     return {"result": result}
-
 
 @api_router.post("/draw_tomsk")
 async def try_parse_vba_json(request: Request):

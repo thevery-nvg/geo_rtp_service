@@ -5,7 +5,7 @@ from pydantic import PostgresDsn
 
 class RunConfig(BaseModel):
     host: str = "0.0.0.0"
-    port: int = 6599
+    port: int = 5555
 
 
 class DBConfig(BaseModel):
@@ -40,9 +40,11 @@ class Cloud(BaseModel):
 
 class GoogleSheets(BaseModel):
     tableid: str
+    dbtableid: str
     credentialspath: str
     ugansk: str
     noyabrsk: str
+    maindbname: str
 
 
 class Settings(BaseSettings):
