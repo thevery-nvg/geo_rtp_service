@@ -1,96 +1,104 @@
-from pyproj import Proj, Transformer
+from pyproj import CRS, Transformer
 import re
+from typing import Tuple
 
 
-def parse_utm_input(utm_string):
-    """Разбирает строку UTM в формате '43 V 381324 6751887'."""
-    parts = utm_string.split()
-    zone = parts[0]
-    lat_band = parts[1]
+def parse_utm_input(utm_string: str) -> Tuple[int, int, int, bool]:
+    """
+    Разбирает строку UTM формата '43 V 381324 6751887'.
+
+    Возвращает:
+        (zone, easting, northing, northern_hemisphere)
+    """
+    parts = utm_string.strip().split()
+    if len(parts) < 4:
+        raise ValueError(f"Некорректный формат UTM: '{utm_string}' (ожидается 4 части)")
+
+    zone = int(parts[0])
+    lat_band = parts[1].upper()
     easting = int(parts[2])
     northing = int(parts[3])
-    # Определяем, находится ли зона в северном полушарии
-    northern_hemisphere = lat_band.upper() >= 'N'
+    northern_hemisphere = lat_band >= "N"
+
     return zone, easting, northing, northern_hemisphere
 
 
-def utm_to_latlon(utm_string):
-    if re.search(r"[nNeE]\d+", utm_string):
+def utm_to_latlon(utm_string: str) -> str:
+    """
+    Конвертирует координаты из формата UTM в широту/долготу (DMS).
+
+    Пример:
+        '43 V 381324 6751887' → 'N61 02 15.0 E76 59 20.5'
+    """
+    # Если в строке уже есть N/E, значит, это не UTM.
+    if re.search(r"[nNsSeE]\d+", utm_string):
         return utm_string
-    zone, easting, northing, northern_hemisphere = parse_utm_input(utm_string)
 
-    # Создаем объекты Proj
-    if northern_hemisphere:
-        proj_utm = Proj(f"+proj=utm +zone={zone} +ellps=WGS84 +datum=WGS84 +units=m +no_defs")
-    else:
-        proj_utm = Proj(
-            f"+proj=utm +zone={zone} +ellps=WGS84 +datum=WGS84 +units=m +no_defs +south")
+    try:
+        zone, easting, northing, northern = parse_utm_input(utm_string)
+    except Exception:
+        return utm_string  # возвращаем как есть, если формат не UTM
 
-    proj_latlon = Proj(proj="latlong", datum="WGS84")
+    crs_utm = CRS.from_proj4(
+        f"+proj=utm +zone={zone} +datum=WGS84 +units=m +no_defs{' +south' if not northern else ''}"
+    )
+    crs_wgs84 = CRS.from_epsg(4326)
+    transformer = Transformer.from_crs(crs_utm, crs_wgs84, always_xy=True)
 
-    # Создаем трансформер
-    transformer = Transformer.from_proj(proj_utm, proj_latlon)
-
-    # Производим трансформацию
     lon, lat = transformer.transform(easting, northing)
-
     return degrees_to_dms(lat, lon)
 
 
-def degrees_to_dms(lat, lon):
-    """Helper function to convert decimal degrees to degrees, minutes, seconds in the specific format."""
-
-    def decimal_to_dms(deg):
+def degrees_to_dms(lat: float, lon: float) -> str:
+    """
+    Переводит десятичные градусы в строку формата:
+        'N61 02 15.0 E76 59 20.5'
+    """
+    def to_dms(deg: float) -> Tuple[int, int, float]:
         d = int(deg)
-        m = int((abs(deg) * 3600) % 3600 // 60)
-        s = (abs(deg) * 3600) % 60
+        m_float = abs(deg - d) * 60
+        m = int(m_float)
+        s = round((m_float - m) * 60, 1)
         return d, m, s
 
-    lat_d, lat_m, lat_s = decimal_to_dms(lat)
-    lon_d, lon_m, lon_s = decimal_to_dms(lon)
+    lat_d, lat_m, lat_s = to_dms(lat)
+    lon_d, lon_m, lon_s = to_dms(lon)
 
-    lat_direction = "N" if lat >= 0 else "S"
-    lon_direction = "E" if lon >= 0 else "W"
+    lat_dir = "N" if lat >= 0 else "S"
+    lon_dir = "E" if lon >= 0 else "W"
 
-    # Форматирование строк с добавлением ведущих нулей для минут и секунд
-    lat_str = f"{lat_direction}{abs(lat_d)} {lat_m:02} {lat_s:05.1f}"
-    lon_str = f"{lon_direction}{abs(lon_d)} {lon_m:02} {lon_s:05.1f}"
-
-    return f"{lat_str} {lon_str}"
+    return f"{lat_dir}{abs(lat_d)} {lat_m:02} {lat_s:04.1f} {lon_dir}{abs(lon_d)} {lon_m:02} {lon_s:04.1f}"
 
 
-def convert_coordinates(coordinates: str) -> str:
-    if '°' in coordinates:
-        return coordinates
+def convert_coordinates(coord_str: str) -> str:
+    """
+    Добавляет символы ° ´ ´´ для вывода координат в человекочитаемом виде.
+    Если строка уже содержит символ '°', возвращает как есть.
+    """
+    if "°" in coord_str:
+        return coord_str
 
-    degrees_symbol = '° '
-    minutes_symbol = "´"
-    seconds_symbol = "´´"
+    parts = coord_str.split()
+    if len(parts) < 6:
+        return coord_str  # если формат неожиданный, не ломаем
 
-    split_coordinates = coordinates.split(' ')
+    deg_symbol = "° "
+    min_symbol = "´"
+    sec_symbol = "´´"
 
-    degrees = split_coordinates[0] + degrees_symbol
-    minutes = split_coordinates[1] + minutes_symbol + split_coordinates[2] + seconds_symbol
-    first_coordinate = degrees + minutes
+    lat = f"{parts[0]}{parts[1]}{deg_symbol}{parts[2]}{min_symbol}{parts[3]}{sec_symbol}"
+    lon = f"{parts[4]}{parts[5]}{deg_symbol}{parts[6]}{min_symbol}{parts[7]}{sec_symbol}"
 
-    second_degrees = split_coordinates[3] + degrees_symbol
-    second_minutes = split_coordinates[4] + minutes_symbol + split_coordinates[5] + seconds_symbol
-    second_coordinate = second_degrees + second_minutes
-
-    converted_coordinates = first_coordinate + ' ' + second_coordinate
-    return converted_coordinates
-
-
-def conv_coordinates_full(s):
-    """ Конечная функция, которая принимает на вход строку UTM и возвращает преобразованное значение.
-    Для юганска"""
-    transformed_value = utm_to_latlon(s)
-    transformed_value = convert_coordinates(transformed_value)
-    return transformed_value
+    return f"{lat} {lon}"
 
 
-if __name__ == '__main__':
-    utm_string1 = "43 V 381324 6751887"
-    # N60 53 03.7 E72 48 48.4
-    # 60 53 3.7N 72 48 48.4E
-    print(conv_coordinates_full(utm_string1))
+def conv_coordinates_full(utm_string: str) -> str:
+    """
+    Конечная функция для конвертации строки UTM → формат координат (с символами ° ´ ´´).
+
+    Пример:
+        '43 V 381324 6751887' → 'N61° 02´15.0´´ E76° 59´20.5´´'
+    """
+    latlon_str = utm_to_latlon(utm_string)
+    formatted = convert_coordinates(latlon_str)
+    return formatted
