@@ -5,7 +5,7 @@ from fastapi import APIRouter
 from pathlib import Path
 import json
 import re
-from google_sheets.schemas import  NngDataWrite, NngDataGet
+from google_sheets.schemas import  NngDataWrite, NngDataGet, FullTable
 
 # table_spreadsheet_id = settings.googlesheets.tableid
 db_spreadsheet_id= settings.googlesheets.dbtableid#"1160jfh4-hCgGcMSfMJ6tbbpUSwJFf6VjzTgxKSwjmQ4"
@@ -43,7 +43,6 @@ async def write_nng_data(request: NngDataWrite):
     valves=json.dumps(request.valves)
     sheet = db_spreadsheet.worksheet(table)
     x=sheet.find(reg_number)
-    sheet.batch_get()
 
     if not x:
         cells=sheet.append_row([year,reg_number,passport,coordinates,control_places,valves ], table_range="A1:F1")
