@@ -1,197 +1,164 @@
 import re
 import random
 from functools import reduce
-from typing import Tuple
+from typing import List, Tuple, Union
 from pyproj import Proj
 
-wgs84 = Proj('epsg:4326')
-patterns = {
+# --- Constants ---
+WGS84 = Proj('epsg:4326')
+
+COORD_PATTERNS = {
     "pa": (r"N(0?\d{2})(\d{2})(\d{2}\.\d{1,3})", r"E(0?\d{2})(\d{2})(\d{2}\.\d{1,3})"),
     "pb": (r"N(0?\d{2})(\d{1,2}\.\d{1,3})", r"E(0?\d{2})(\d{1,2}\.\d{1,3})"),
     "pc": (r"N?(\d{2}\.\d+)", r"E?(\d{2}\.\d+)")
 }
 
 
-def convert_coordinates_new(coord_str):
-    # Разделяем строку на широту и долготу
-    # Получаем в формате N62.90617° E74.41833°
-    # Возвращаем в формате N62 54.37	E74 25.10
-    parts = coord_str.split()
-
-    # Обрабатываем широту (первая часть)
-    lat_part = parts[0]
-    lat_deg = lat_part.split('°')[0][1:]  # Убираем 'N' и '°'
-    lat_deg_float = float(lat_deg)
-    lat_deg_int = int(lat_deg_float)
-    lat_min = (lat_deg_float - lat_deg_int) * 60
-    lat_str = f"N{lat_deg_int} {lat_min:.2f}"
-
-    # Обрабатываем долготу (вторая часть)
-    lon_part = parts[1]
-    lon_deg = lon_part.split('°')[0][1:]  # Убираем 'E' и '°'
-    lon_deg_float = float(lon_deg)
-    lon_deg_int = int(lon_deg_float)
-    lon_min = (lon_deg_float - lon_deg_int) * 60
-    lon_str = f"E{lon_deg_int} {lon_min:.2f}"
-
-    return f"{lat_str}\t{lon_str}"
-
-
-def clear_data(data: str) -> str:
+# --- Utility functions ---
+def _clean_data(data: str) -> str:
+    """Очищает строку от лишних символов, заменяя запятые на точки."""
     return re.sub(r"[^NE0-9.]", "", data.replace(",", "."))
 
 
-def convert_coordinates_full(p: str, data: str) -> Tuple[float, float]:
-    lat, lon = 0, 0
-    x = re.fullmatch(p, clear_data(data)).groups()
-    if len(x) == 2:
-        lat, lon = float(x[0]), float(x[1])
-    elif len(x) == 4:
-        lat, lon = float(x[0]) + float(x[1]) / 60, float(x[2]) + float(x[3]) / 60
-    elif len(x) == 6:
-        lat, lon = float(x[0]) + float(x[1]) / 60 + float(x[2]) / 3600, float(x[3]) + float(
-            x[4]) / 60 + float(
-            x[5]) / 3600
+def _zfillr(value: Union[str, float], width: int = 8) -> str:
+    """Обрезает или дополняет число нулями справа до указанной длины."""
+    s = str(value)
+    return s[:width] if len(s) > width else s.ljust(width, "0")
+
+
+def _to_dms(value: float) -> Tuple[int, int, int]:
+    """Перевод десятичной координаты в градусы, минуты, секунды."""
+    deg = int(value)
+    minutes = int((value - deg) * 60)
+    seconds = int((value - deg - minutes / 60) * 3600)
+    return deg, minutes, seconds
+
+
+def decimal_degrees_to_str(lat: float, lon: float) -> str:
+    """Форматирует координаты в виде Nxx.xxxx° Exx.xxxx°."""
+    deg_symbol = "° "
+    return f"N{_zfillr(lat)}{deg_symbol}E{_zfillr(lon)}{deg_symbol}"
+
+
+def convert_to_dms_format(coord_str: str) -> str:
+    """Преобразует строку формата 'N62.90617° E74.41833°' в 'N62 54.37\tE74 25.10'."""
+    try:
+        lat_str, lon_str = coord_str.split()
+        lat = float(lat_str[1:-1])
+        lon = float(lon_str[1:-1])
+    except (ValueError, IndexError):
+        return ""
+
+    def _to_deg_min(val: float) -> str:
+        deg = int(val)
+        minutes = (val - deg) * 60
+        return f"{deg} {minutes:.2f}"
+
+    return f"N{_to_deg_min(lat)}\tE{_to_deg_min(lon)}"
+
+
+# --- Coordinate parsing ---
+def convert_coordinates_full(pattern: str, coord_str: str) -> Tuple[float, float]:
+    """Преобразует координату по регулярному шаблону в (lat, lon)."""
+    match = re.fullmatch(pattern, _clean_data(coord_str))
+    if not match:
+        return 0.0, 0.0
+
+    parts = match.groups()
+    if len(parts) == 2:
+        lat, lon = map(float, parts)
+    elif len(parts) == 4:
+        lat = float(parts[0]) + float(parts[1]) / 60
+        lon = float(parts[2]) + float(parts[3]) / 60
+    elif len(parts) == 6:
+        lat = float(parts[0]) + float(parts[1]) / 60 + float(parts[2]) / 3600
+        lon = float(parts[3]) + float(parts[4]) / 60 + float(parts[5]) / 3600
+    else:
+        return 0.0, 0.0
+
     return round(lat, 5), round(lon, 5)
 
 
-def raw_decode(data, screen=False):
-    try:
-        line = clear_data(data[0])
-    except:
+def raw_decode(data: List[str], screen: bool = False) -> List[Union[Tuple[float, float], str]]:
+    """Декодирует строковые координаты в список (lat, lon) или в текст для экрана."""
+    if not data:
         return []
-    out = []
-    out_screen = []
-    for pattern, (p1, p2) in patterns.items():
-        d = clear_data(reduce(lambda x, y: x + y, data))
-        if re.fullmatch(f"{p1}{p2}", line) or re.search(p1, d):
-            lats = re.findall(p1, d)
-            lons = re.findall(p2, d)
-            for lat, lon in zip(lats, lons):
-                coord = "N" + "".join(lat) + "E" + "".join(lon)
-                out.append(convert_coordinates_full(f"{p1}{p2}", coord))
-                x = convert_coordinates_full(f"{p1}{p2}", coord)
-                out_screen.append(decimal_degrees_full_form(x[0], x[1]))
-            if screen:
-                return [convert_coordinates_new(x) for x in out_screen]
-            else:
-                return out
+
+    combined = _clean_data(reduce(lambda x, y: x + y, data))
+    first_line = _clean_data(data[0])
+    for pattern, (p_lat, p_lon) in COORD_PATTERNS.items():
+        full_pattern = f"{p_lat}{p_lon}"
+        if re.fullmatch(full_pattern, first_line) or re.search(p_lat, combined):
+            lat_matches = re.findall(p_lat, combined)
+            lon_matches = re.findall(p_lon, combined)
+            coords = []
+            formatted = []
+
+            for lat, lon in zip(lat_matches, lon_matches):
+                coord_str = "N" + "".join(lat) + "E" + "".join(lon)
+                coord = convert_coordinates_full(full_pattern, coord_str)
+                coords.append(coord)
+                formatted.append(decimal_degrees_to_str(*coord))
+
+            return [convert_to_dms_format(x) for x in formatted] if screen else coords
     return []
 
 
-def google_decode(data, screen=False):
-    a = re.findall("\d{2}\.\d+", data)
-    left = []
-    right = []
-    res_screen = []
-    for i, val in enumerate(a):
-        if i % 2:
-            left.append(val)
-        else:
-            right.append(val)
-    res = []
-    for i in zip(left, right):
-        res.append(i)
-        res_screen.append(decimal_degrees_full_form(i[0], i[1]))
-    if screen:
-        return [convert_coordinates_new(x) for x in res_screen]
-    else:
-        return res
+def google_decode(data: str, screen: bool = False) -> List[Union[Tuple[float, float], str]]:
+    """Парсит координаты из строк Google Maps."""
+    matches = re.findall(r"\d{2}\.\d+", data)
+    if not matches:
+        return []
+
+    lats, lons = matches[::2], matches[1::2]
+    coords = list(zip(map(float, lats), map(float, lons)))
+    formatted = [decimal_degrees_to_str(lat, lon) for lat, lon in coords]
+
+    return [convert_to_dms_format(x) for x in formatted] if screen else coords
 
 
-def geo_decode_gpx(data):
-    head = '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-    <gpx xmlns="http://www.topografix.com/GPX/1/1" creator="MapSource 6.16.3" version="1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
+def ready_data(data: str, screen: bool = False) -> List[Union[Tuple[float, float], str]]:
+    """Парсит данные вида '56.12345 74.98765' построчно."""
+    lines = [line.strip() for line in data.splitlines() if line.strip()]
+    pattern = re.compile(r"\d{2}[\.,]\d{3,5}")
+    coords, formatted = [], []
 
-      <metadata>
-        <link href="http://www.garmin.com">
-          <text>Garmin International</text>
-        </link>
-        <time>2024-01-23T12:24:21Z</time>
-        <bounds maxlat="56.092479145154357" maxlon="55.898553002625704" minlat="53.633718425408006" minlon="51.073859967291355"/>
-      </metadata>'''
-    tail = '\n</gpx>'
-    output = ""
-    output += head
-    height = random.randint(40, 60)
-    for i, (lat, lon) in enumerate(data, start=1):
-        temp = f'''  <wpt lat="{lat}" lon="{lon}">
-                <ele>{height + random.randint(1, 5)}</ele>
-                <time>2024-01-16T12:56:09Z</time>
-                <name>{i:03}</name>
-                <cmt>30-APR-04 0:57:35</cmt>
-                <desc>30-APR-04 0:57:35</desc>
-                <sym>Flag, Green</sym>
-                <extensions>
-                <gpxx:WaypointExtension xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3">
-                <gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
-                </gpxx:WaypointExtension>
-                </extensions>
-                </wpt>\n'''
-        output += temp
-    output += tail
-    return output
+    for line in lines:
+        matches = [m.replace(",", ".") for m in re.findall(pattern, line)]
+        if len(matches) < 2:
+            continue
+        lat, lon = map(float, matches[:2])
+        coords.append((lat, lon))
+        formatted.append(decimal_degrees_to_str(lat, lon))
+
+    return formatted if screen else coords
 
 
-def lat_to_dms(lat):
-    deg = int(lat)
-    min_ = int((lat - deg) * 60)
-    sec = int((lat - deg - min_ / 60) * 3600)
-    return deg, min_, sec
+# --- GPX output ---
+def geo_decode_gpx(coords: List[Tuple[float, float]]) -> str:
+    """Генерирует GPX XML из списка координат."""
+    header = """<?xml version="1.0" encoding="UTF-8"?>
+<gpx xmlns="http://www.topografix.com/GPX/1/1"
+     creator="MapSource 6.16.3"
+     version="1.1"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="http://www.topografix.com/GPX/1/1 
+     http://www.topografix.com/GPX/1/1/gpx.xsd">
+  <metadata>
+    <link href="http://www.garmin.com"><text>Garmin International</text></link>
+    <time>2024-01-23T12:24:21Z</time>
+  </metadata>
+"""
+    body = ""
+    base_height = random.randint(40, 60)
 
+    for idx, (lat, lon) in enumerate(coords, start=1):
+        height = base_height + random.randint(1, 5)
+        body += f'''  <wpt lat="{lat}" lon="{lon}">
+    <ele>{height}</ele>
+    <time>2024-01-16T12:56:09Z</time>
+    <name>{idx:03}</name>
+    <sym>Flag, Green</sym>
+  </wpt>\n'''
 
-def lon_to_dms(lon):
-    deg = int(lon)
-    min_ = int((lon - deg) * 60)
-    sec = int((lon - deg - min_ / 60) * 3600)
-    return deg, min_, sec
-
-
-def zfillr(s):
-    if len(s) > 8:
-        return s[:8]
-    return s + "0" * (8 - len(s))
-
-
-def decimal_degrees_full_form(x, y):
-    degrees_symbol = '° '
-    minutes_symbol = "´"
-    seconds_symbol = "´´"
-    return f"N{zfillr(str(x))}{degrees_symbol}E{zfillr(str(y))}{degrees_symbol}"
-
-
-def ready_data(data, screen=False):
-    degrees_symbol = '° '
-    data = [s for s in data.split('\n') if len(s) > 0]
-    p = re.compile(r'\d{2}[\.,]\d{3,5}')
-    sc = []
-    out = []
-    for s in data:
-        lat = re.findall(p, s)[0].replace(',', '.')
-        lon = re.findall(p, s)[1].replace(',', '.')
-        sc.append(f"N{zfillr(str(lat))}{degrees_symbol}E{zfillr(str(lon))}{degrees_symbol}")
-        out.append((float(lat), float(lon)))
-    if screen:
-        return sc
-    else:
-        return out
-
-
-if __name__ == '__main__':
-    degrees_symbol = '° '
-    minutes_symbol = "´"
-    seconds_symbol = "´´"
-    s = [
-        (60.96212, 70.87592),
-        (60.96212, 70.87600),
-        (60.96207, 70.87632),
-        (60.96203, 70.87643),
-        (60.96190, 70.87728),
-        (60.96170, 70.87860),
-        (60.96150, 70.87993),
-        (60.96130, 70.88122),
-        (60.96110, 70.88250),
-        (60.96052, 70.88268),
-
-    ]
-    print(process_coordinates(s))
+    return header + body + "</gpx>\n"
