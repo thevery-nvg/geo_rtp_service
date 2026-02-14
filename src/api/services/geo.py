@@ -106,11 +106,14 @@ def raw_decode(data: List[str], screen: bool = False) -> List[Union[Tuple[float,
 
 def google_decode(data: str, screen: bool = False) -> List[Union[Tuple[float, float], str]]:
     """Парсит координаты из строк Google Maps."""
-    matches = re.findall(r"\d{2}\.\d+", data)
+    p=re.compile(r'<coordinates>\n.+\n.+</coordinates>')
+    c=re.search(p,data)
+    matches = re.findall(r"\d{2}\.\d+", c.group(0))
     if not matches:
         return []
 
     lats, lons = matches[::2], matches[1::2]
+    lats, lons =lons,lats
     coords = list(zip(map(float, lats), map(float, lons)))
     formatted = [decimal_degrees_to_str(lat, lon) for lat, lon in coords]
 

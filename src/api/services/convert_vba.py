@@ -1,3 +1,4 @@
+from loguru import logger
 from pyproj import CRS, Transformer
 import re
 from typing import Tuple
@@ -70,6 +71,8 @@ def degrees_to_dms(lat: float, lon: float) -> str:
     return f"{lat_dir}{abs(lat_d)} {lat_m:02} {lat_s:04.1f} {lon_dir}{abs(lon_d)} {lon_m:02} {lon_s:04.1f}"
 
 
+
+
 def convert_coordinates(coord_str: str) -> str:
     """
     Добавляет символы ° ´ ´´ для вывода координат в человекочитаемом виде.
@@ -79,18 +82,22 @@ def convert_coordinates(coord_str: str) -> str:
         return coord_str
 
     parts = coord_str.split()
-    if len(parts) < 6:
+
+    if len(parts) != 6:
+        logger.warning(f"Некорректный формат координат: {coord_str}")
         return coord_str  # если формат неожиданный, не ломаем
 
     deg_symbol = "° "
     min_symbol = "´"
     sec_symbol = "´´"
 
-    lat = f"{parts[0]}{parts[1]}{deg_symbol}{parts[2]}{min_symbol}{parts[3]}{sec_symbol}"
-    lon = f"{parts[4]}{parts[5]}{deg_symbol}{parts[6]}{min_symbol}{parts[7]}{sec_symbol}"
+    # Широта: N61 17 52.8 → N61° 17´52.8´´
+    lat = f"{parts[0]}{deg_symbol}{parts[1]}{min_symbol}{parts[2]}{sec_symbol}"
+
+    # Долгота: E70 22 50.3 → E70° 22´50.3´´
+    lon = f"{parts[3]}{deg_symbol}{parts[4]}{min_symbol}{parts[5]}{sec_symbol}"
 
     return f"{lat} {lon}"
-
 
 def conv_coordinates_full(utm_string: str) -> str:
     """

@@ -5,10 +5,10 @@ from fastapi import APIRouter
 from pathlib import Path
 import json
 import re
-from google_sheets.schemas import  NngDataWrite, NngDataGet, FullTable
+from google_sheets.schemas import  NngDataWrite, NngDataGet
 
-# table_spreadsheet_id = settings.googlesheets.tableid
-db_spreadsheet_id= settings.googlesheets.dbtableid#"1160jfh4-hCgGcMSfMJ6tbbpUSwJFf6VjzTgxKSwjmQ4"
+
+db_spreadsheet_id= settings.googlesheets.dbtableid
 noyabrsk = settings.googlesheets.noyabrsk
 ugansk = settings.googlesheets.ugansk
 
@@ -28,8 +28,8 @@ gs_router = APIRouter(
 credentials = ServiceAccountCredentials.from_json_keyfile_name(credentials_file, scope)
 client = gspread.authorize(credentials)
 db_spreadsheet = client.open_by_key(db_spreadsheet_id)
-# table_spreadsheet = client.open_by_key(table_spreadsheet_id)
-table=settings.googlesheets.maindbname#"main"
+
+table=settings.googlesheets.maindbname
 json_storage=BASE_DIR/"json_storage"
 
 

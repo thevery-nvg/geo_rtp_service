@@ -9,17 +9,15 @@ from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from loguru import logger
-from sqladmin import Admin
+
 
 from api import api_router
-from auth import auth_router, users_router
-from auth.admin import UserAdmin, authentication_backend
-from auth.users_proxy import fastapi_users_proxy_router
-from cloud.uploader import upload_router
+
+
 from core.config import settings
 from core.core_router import core_router
 from core.models import db_helper
-from google_sheets.sheets_main import gs_router
+# from google_sheets.sheets_main import gs_router
 
 
 @asynccontextmanager
@@ -36,25 +34,14 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-app.include_router(auth_router, prefix=settings.prefix.api)
-app.include_router(users_router, prefix=settings.prefix.api)
-app.include_router(fastapi_users_proxy_router)
+
 app.include_router(api_router)
 app.include_router(core_router)
-app.include_router(upload_router)
-app.include_router(gs_router)
+# app.include_router(gs_router)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
-# admin--------------
-admin = Admin(
-    app=app,
-    authentication_backend=authentication_backend,
-    session_maker=db_helper.session_factory,
-)
-admin.add_view(UserAdmin)
-# admin--------------
 
 
 @app.middleware("http")
