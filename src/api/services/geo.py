@@ -10,7 +10,8 @@ WGS84 = Proj('epsg:4326')
 COORD_PATTERNS = {
     "pa": (r"N(0?\d{2})(\d{2})(\d{2}\.\d{1,3})", r"E(0?\d{2})(\d{2})(\d{2}\.\d{1,3})"),
     "pb": (r"N(0?\d{2})(\d{1,2}\.\d{1,3})", r"E(0?\d{2})(\d{1,2}\.\d{1,3})"),
-    "pc": (r"N(\d{2}\.\d+)", r"E(\d{2}\.\d+)")
+    "pc": (r"N(\d{2}\.\d+)", r"E(\d{2}\.\d+)"),
+    "pd": (r"(\d{2}\.\d+)", r"(\d{2}\.\d+)")
 }
 
 
@@ -59,6 +60,25 @@ def convert_to_dms_format(coord_str: str) -> str:
     return f"N{_to_deg_min(lat)}\tE{_to_deg_min(lon)}"
 
 
+
+def convert_to_dms_format2(coord_str: str) -> str:
+    """Преобразует строку формата 'N62.90617° E74.41833°' в 'N62 54.37\tE74 25.10'."""
+    try:
+        lat_str, lon_str = coord_str.split()
+        lat = float(lat_str[1:-1])
+        lon = float(lon_str[1:-1])
+    except (ValueError, IndexError):
+        return ""
+
+    def _to_deg_min(val: float) -> str:
+        deg = int(val)
+        minutes = (val - deg) * 60
+        sec=(minutes-int(minutes))*60
+        minutes = int(minutes)
+        return f"{deg} {minutes} {sec:.2f}"
+
+    return f"N{_to_deg_min(lat)}\tE{_to_deg_min(lon)}"
+
 # --- Coordinate parsing ---
 def convert_coordinates_full(pattern: str, coord_str: str) -> Tuple[float, float]:
     """Преобразует координату по регулярному шаблону в (lat, lon)."""
@@ -81,18 +101,19 @@ def convert_coordinates_full(pattern: str, coord_str: str) -> Tuple[float, float
     return round(lat, 5), round(lon, 5)
 
 
-def raw_decode(data: List[str],f, screen: bool = False) -> List[Union[Tuple[float, float], str]]:
+def raw_decode(data: List[str], fi,fo, screen: bool = False) -> List[Union[Tuple[float, float], str]]:
     """Декодирует строковые координаты в список (lat, lon) или в текст для экрана."""
 
     if not data:
         return []
-    if "pa" in f:
+    if "pa" in fi:
         pattern = COORD_PATTERNS["pa"]
-    elif "pb" in f:
+    elif "pb" in fi:
         pattern = COORD_PATTERNS["pb"]
-    else:
+    elif "pc" in fi:
         pattern = COORD_PATTERNS["pc"]
-
+    else:
+        pattern = COORD_PATTERNS["pd"]
     combined = _clean_data(reduce(lambda x, y: x + y, data))
 
     p_lat=pattern[0]
@@ -108,7 +129,16 @@ def raw_decode(data: List[str],f, screen: bool = False) -> List[Union[Tuple[floa
         coord = convert_coordinates_full(full_pattern, coord_str)
         coords.append(coord)
         formatted.append(decimal_degrees_to_str(*coord))
-    return [convert_to_dms_format(x) for x in formatted] if screen else coords
+
+    if "pa" in fo:
+        res = [convert_to_dms_format2(x) for x in formatted] if screen else coords
+    elif "pb" in fo:
+        res = [convert_to_dms_format(x) for x in formatted] if screen else coords
+    elif "pc" in fo:
+        res = formatted if screen else coords
+    else:
+        res = coords
+    return res
 
 
 def google_decode(data: str, screen: bool = False) -> List[Union[Tuple[float, float], str]]:

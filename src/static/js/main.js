@@ -3,11 +3,16 @@ async function sendData() {
     if (input.trim() === '') {
     alert('Поле не должно быть пустым!');
     return; // Выходим из функции, если поле пустое
-}   const selectElement = document.getElementById('input_select');
-    const format = selectElement.textContent;
-    const selectedText = selectElement.options[selectElement.selectedIndex].text;
+}
     const hiddenField = document.getElementById('hiddenField');
     const coordinatesList = document.getElementById('coordinatesList');
+
+    const inputFormatElement = document.getElementById('input_select');
+    const inputFormatText = inputFormatElement.options[inputFormatElement.selectedIndex].text;
+
+    const outputFormatElement = document.getElementById('output_select');
+    const outputFormatText = outputFormatElement.options[outputFormatElement.selectedIndex].text;
+
 
     try {
         const response = await fetch('/api/geocode_list', {
@@ -15,7 +20,7 @@ async function sendData() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ address: input ,f:selectedText}),
+            body: JSON.stringify({ address: input ,fi:inputFormatText,fo:outputFormatText}),
         });
 
         if (!response.ok) {
@@ -34,7 +39,7 @@ async function sendData() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ address: input ,f:selectedText}),
+            body: JSON.stringify({ address: input ,fi:inputFormatText,fo:outputFormatText}),
         });
 
         if (!response.ok) {

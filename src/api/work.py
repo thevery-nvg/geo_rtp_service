@@ -17,13 +17,15 @@ async def _get_json_field(request: Request, field: str = "address") -> str:
 
 def _make_decoder_endpoint(decode_func, with_gpx=False, screen=False):
     """Фабрика для создания эндпоинтов геокодеров."""
+
     async def endpoint(request: Request):
         address = await _get_json_field(request)
-        f = await _get_json_field(request,"f")
-        #print(address)
-        print("format:",f)
-        decoded = decode_func(address,f, screen=screen) if screen else decode_func(address,f)
+        fi = await _get_json_field(request, "fi")
+        fo = await _get_json_field(request, "fo")
+
+        decoded = decode_func(address, fi, fo, screen=screen) if screen else decode_func(address, fi, fo)
         return geo_decode_gpx(decoded) if with_gpx else decoded
+
     return endpoint
 
 
