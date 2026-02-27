@@ -8,11 +8,11 @@ async function sendData() {
     const coordinatesList = document.getElementById('coordinatesList');
 
     const inputFormatElement = document.getElementById('input_select');
-    const inputFormatText = inputFormatElement.options[inputFormatElement.selectedIndex].text;
+    const inputFormatText = inputFormatElement.options[inputFormatElement.selectedIndex].value;
 
     const outputFormatElement = document.getElementById('output_select');
-    const outputFormatText = outputFormatElement.options[outputFormatElement.selectedIndex].text;
-
+    const outputFormatText = outputFormatElement.options[outputFormatElement.selectedIndex].value;
+    console.log(outputFormatText)
 
     try {
         const response = await fetch('/api/geocode_list', {
@@ -225,7 +225,21 @@ async function logout() {
         //alert('Error during logout: ' + error.message);}
         }}
 
-//document.getElementById('logout-button').addEventListener('click', logout);
-//из файла navbar
 
+
+
+
+
+function toggleListType() {
+  const oldList = document.getElementById('coordinatesList');
+  if (!oldList) return;
+
+  const newTagName = oldList.tagName === 'UL' ? 'OL' : 'UL';
+
+  const newList = document.createElement(newTagName);
+  newList.id = oldList.id;
+  newList.innerHTML = oldList.innerHTML;
+
+  oldList.replaceWith(newList);
+}
 

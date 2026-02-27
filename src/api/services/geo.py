@@ -11,15 +11,15 @@ COORD_PATTERNS = {
     "pa": (r"N(0?\d{2})(\d{2})(\d{2}\.\d{1,3})", r"E(0?\d{2})(\d{2})(\d{2}\.\d{1,3})"),
     "pb": (r"N(0?\d{2})(\d{1,2}\.\d{1,3})", r"E(0?\d{2})(\d{1,2}\.\d{1,3})"),
     "pc": (r"N(\d{2}\.\d+)", r"E(\d{2}\.\d+)"),
-    "pd": (r"(\d{2}\.\d+)", r"(\d{2}\.\d+)")
+    "pd": (r"(\d{2}\.\d{5})", r"(\d{2}\.\d{5})")
 }
 
 
 # --- Utility functions ---
 def _clean_data(data: str) -> str:
     """Очищает строку от лишних символов, заменяя запятые на точки."""
-    x=re.sub(r"[^NE0-9.]", "", data.replace(",", "."))
-    y=re.sub(r"\d{2}\.\d{2}\.\d{4}","",x)
+    x = re.sub(r"[^NE0-9.]", "", data.replace(",", "."))
+    y = re.sub(r"\d{2}\.\d{2}\.\d{4}","",x)
     return y
 
 
@@ -115,8 +115,7 @@ def raw_decode(data: List[str], fi,fo, screen: bool = False) -> List[Union[Tuple
     else:
         pattern = COORD_PATTERNS["pd"]
     combined = _clean_data(reduce(lambda x, y: x + y, data))
-
-    p_lat=pattern[0]
+    p_lat = pattern[0]
     p_lon = pattern[1]
     full_pattern = f"{p_lat}{p_lon}"
     lat_matches = re.findall(p_lat, combined)
