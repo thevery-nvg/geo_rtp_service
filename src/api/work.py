@@ -19,7 +19,10 @@ def _make_decoder_endpoint(decode_func, with_gpx=False, screen=False):
     """Фабрика для создания эндпоинтов геокодеров."""
     async def endpoint(request: Request):
         address = await _get_json_field(request)
-        decoded = decode_func(address, screen=screen) if screen else decode_func(address)
+        f = await _get_json_field(request,"f")
+        #print(address)
+        print("format:",f)
+        decoded = decode_func(address,f, screen=screen) if screen else decode_func(address,f)
         return geo_decode_gpx(decoded) if with_gpx else decoded
     return endpoint
 

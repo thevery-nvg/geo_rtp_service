@@ -3,7 +3,9 @@ async function sendData() {
     if (input.trim() === '') {
     alert('Поле не должно быть пустым!');
     return; // Выходим из функции, если поле пустое
-}
+}   const selectElement = document.getElementById('input_select');
+    const format = selectElement.textContent;
+    const selectedText = selectElement.options[selectElement.selectedIndex].text;
     const hiddenField = document.getElementById('hiddenField');
     const coordinatesList = document.getElementById('coordinatesList');
 
@@ -13,7 +15,7 @@ async function sendData() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ address: input }),
+            body: JSON.stringify({ address: input ,f:selectedText}),
         });
 
         if (!response.ok) {
@@ -32,7 +34,7 @@ async function sendData() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ address: input }),
+            body: JSON.stringify({ address: input ,f:selectedText}),
         });
 
         if (!response.ok) {

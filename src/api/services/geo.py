@@ -10,14 +10,16 @@ WGS84 = Proj('epsg:4326')
 COORD_PATTERNS = {
     "pa": (r"N(0?\d{2})(\d{2})(\d{2}\.\d{1,3})", r"E(0?\d{2})(\d{2})(\d{2}\.\d{1,3})"),
     "pb": (r"N(0?\d{2})(\d{1,2}\.\d{1,3})", r"E(0?\d{2})(\d{1,2}\.\d{1,3})"),
-    "pc": (r"N?(\d{2}\.\d+)", r"E?(\d{2}\.\d+)")
+    "pc": (r"N(\d{2}\.\d+)", r"E(\d{2}\.\d+)")
 }
 
 
 # --- Utility functions ---
 def _clean_data(data: str) -> str:
     """Очищает строку от лишних символов, заменяя запятые на точки."""
-    return re.sub(r"[^NE0-9.]", "", data.replace(",", "."))
+    x=re.sub(r"[^NE0-9.]", "", data.replace(",", "."))
+    y=re.sub(r"\d{2}\.\d{2}\.\d{4}","",x)
+    return y
 
 
 def _zfillr(value: Union[str, float], width: int = 8) -> str:
@@ -79,29 +81,34 @@ def convert_coordinates_full(pattern: str, coord_str: str) -> Tuple[float, float
     return round(lat, 5), round(lon, 5)
 
 
-def raw_decode(data: List[str], screen: bool = False) -> List[Union[Tuple[float, float], str]]:
+def raw_decode(data: List[str],f, screen: bool = False) -> List[Union[Tuple[float, float], str]]:
     """Декодирует строковые координаты в список (lat, lon) или в текст для экрана."""
+
     if not data:
         return []
+    if "pa" in f:
+        pattern = COORD_PATTERNS["pa"]
+    elif "pb" in f:
+        pattern = COORD_PATTERNS["pb"]
+    else:
+        pattern = COORD_PATTERNS["pc"]
 
     combined = _clean_data(reduce(lambda x, y: x + y, data))
-    first_line = _clean_data(data[0])
-    for pattern, (p_lat, p_lon) in COORD_PATTERNS.items():
-        full_pattern = f"{p_lat}{p_lon}"
-        if re.fullmatch(full_pattern, first_line) or re.search(p_lat, combined):
-            lat_matches = re.findall(p_lat, combined)
-            lon_matches = re.findall(p_lon, combined)
-            coords = []
-            formatted = []
 
-            for lat, lon in zip(lat_matches, lon_matches):
-                coord_str = "N" + "".join(lat) + "E" + "".join(lon)
-                coord = convert_coordinates_full(full_pattern, coord_str)
-                coords.append(coord)
-                formatted.append(decimal_degrees_to_str(*coord))
+    p_lat=pattern[0]
+    p_lon = pattern[1]
+    full_pattern = f"{p_lat}{p_lon}"
+    lat_matches = re.findall(p_lat, combined)
+    lon_matches = re.findall(p_lon, combined)
+    coords = []
+    formatted = []
 
-            return [convert_to_dms_format(x) for x in formatted] if screen else coords
-    return []
+    for lat, lon in zip(lat_matches, lon_matches):
+        coord_str = "N" + "".join(lat) + "E" + "".join(lon)
+        coord = convert_coordinates_full(full_pattern, coord_str)
+        coords.append(coord)
+        formatted.append(decimal_degrees_to_str(*coord))
+    return [convert_to_dms_format(x) for x in formatted] if screen else coords
 
 
 def google_decode(data: str, screen: bool = False) -> List[Union[Tuple[float, float], str]]:
