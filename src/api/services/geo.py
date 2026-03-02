@@ -3,6 +3,7 @@ import random
 from functools import reduce
 from typing import List, Tuple, Union
 from pyproj import Proj
+from loguru import logger
 
 # --- Constants ---
 WGS84 = Proj('epsg:4326')
@@ -11,7 +12,7 @@ COORD_PATTERNS = {
     "pa": (r"N(0?\d{2})(\d{2})(\d{2}\.\d{1,3})", r"E(0?\d{2})(\d{2})(\d{2}\.\d{1,3})"),
     "pb": (r"N(0?\d{2})(\d{1,2}\.\d{1,3})", r"E(0?\d{2})(\d{1,2}\.\d{1,3})"),
     "pc": (r"N(\d{2}\.\d+)", r"E(\d{2}\.\d+)"),
-    "pd": (r"(\d{2}\.\d{5})", r"(\d{2}\.\d{5})")
+
 }
 
 
@@ -19,7 +20,7 @@ COORD_PATTERNS = {
 def _clean_data(data: str) -> str:
     """Очищает строку от лишних символов, заменяя запятые на точки."""
     x = re.sub(r"[^NE0-9.]", "", data.replace(",", "."))
-    y = re.sub(r"\d{2}\.\d{2}\.\d{4}","",x)
+    y = re.sub(r"\d{2}\.\d{2}\.\d{4}", "", x)
     return y
 
 
@@ -60,7 +61,6 @@ def convert_to_dms_format(coord_str: str) -> str:
     return f"N{_to_deg_min(lat)}\tE{_to_deg_min(lon)}"
 
 
-
 def convert_to_dms_format2(coord_str: str) -> str:
     """Преобразует строку формата 'N62.90617° E74.41833°' в 'N62 54.37\tE74 25.10'."""
     try:
@@ -73,11 +73,12 @@ def convert_to_dms_format2(coord_str: str) -> str:
     def _to_deg_min(val: float) -> str:
         deg = int(val)
         minutes = (val - deg) * 60
-        sec=(minutes-int(minutes))*60
+        sec = (minutes - int(minutes)) * 60
         minutes = int(minutes)
         return f"{deg} {minutes} {sec:.2f}"
 
     return f"N{_to_deg_min(lat)}\tE{_to_deg_min(lon)}"
+
 
 # --- Coordinate parsing ---
 def convert_coordinates_full(pattern: str, coord_str: str) -> Tuple[float, float]:
@@ -101,19 +102,24 @@ def convert_coordinates_full(pattern: str, coord_str: str) -> Tuple[float, float
     return round(lat, 5), round(lon, 5)
 
 
-def raw_decode(data: List[str], fi,fo, screen: bool = False) -> List[Union[Tuple[float, float], str]]:
+def raw_decode(data: List[str], fi, fo, screen: bool = False) -> List[Union[Tuple[float, float], str]]:
     """Декодирует строковые координаты в список (lat, lon) или в текст для экрана."""
 
     if not data:
         return []
-    if "pa" in fi:
-        pattern = COORD_PATTERNS["pa"]
-    elif "pb" in fi:
-        pattern = COORD_PATTERNS["pb"]
-    elif "pc" in fi:
-        pattern = COORD_PATTERNS["pc"]
-    else:
-        pattern = COORD_PATTERNS["pd"]
+
+    format_selector = re.search(r"pa|pb|pc", fi)
+    match format_selector.group(0):
+        case "pa":
+            pattern = COORD_PATTERNS["pa"]
+        case "pb":
+            pattern = COORD_PATTERNS["pb"]
+        case "pc":
+            pattern = COORD_PATTERNS["pc"]
+        case _:
+            logger.debug("unknown format")
+            pattern = COORD_PATTERNS["pc"]
+
     combined = _clean_data(reduce(lambda x, y: x + y, data))
     p_lat = pattern[0]
     p_lon = pattern[1]
@@ -129,27 +135,30 @@ def raw_decode(data: List[str], fi,fo, screen: bool = False) -> List[Union[Tuple
         coords.append(coord)
         formatted.append(decimal_degrees_to_str(*coord))
 
-    if "pa" in fo:
-        res = [convert_to_dms_format2(x) for x in formatted] if screen else coords
-    elif "pb" in fo:
-        res = [convert_to_dms_format(x) for x in formatted] if screen else coords
-    elif "pc" in fo:
-        res = formatted if screen else coords
-    else:
-        res = coords
+    format_selector = re.search(r"pa|pb|pc", fo)
+    match format_selector.group(0):
+        case "pa":
+            res = [convert_to_dms_format2(x) for x in formatted] if screen else coords
+        case "pb":
+            res = [convert_to_dms_format(x) for x in formatted] if screen else coords
+        case "pc":
+            res = formatted if screen else coords
+        case _:
+            logger.debug("unknown format")
+            res = coords
     return res
 
 
 def google_decode(data: str, screen: bool = False) -> List[Union[Tuple[float, float], str]]:
     """Парсит координаты из строк Google Maps."""
-    p=re.compile(r'<coordinates>\n.+\n.+</coordinates>')
-    c=re.search(p,data)
+    p = re.compile(r'<coordinates>\n.+\n.+</coordinates>')
+    c = re.search(p, data)
     matches = re.findall(r"\d{2}\.\d+", c.group(0))
     if not matches:
         return []
 
     lats, lons = matches[::2], matches[1::2]
-    lats, lons =lons,lats
+    lats, lons = lons, lats
     coords = list(zip(map(float, lats), map(float, lons)))
     formatted = [decimal_degrees_to_str(lat, lon) for lat, lon in coords]
 
