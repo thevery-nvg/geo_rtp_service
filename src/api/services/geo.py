@@ -46,6 +46,7 @@ def decimal_degrees_to_str(lat: float, lon: float) -> str:
 
 def convert_to_dms_format(coord_str: str) -> str:
     """Преобразует строку формата 'N62.90617° E74.41833°' в 'N62 54.37\tE74 25.10'."""
+    """гггг мм.ммм [N62 24.231 E70 52.287] """
     try:
         lat_str, lon_str = coord_str.split()
         lat = float(lat_str[1:-1])
@@ -63,6 +64,7 @@ def convert_to_dms_format(coord_str: str) -> str:
 
 def convert_to_dms_format2(coord_str: str) -> str:
     """Преобразует строку формата 'N62.90617° E74.41833°' в 'N62 54.37\tE74 25.10'."""
+    """гггг мм сс.с [N62 55 12.1 E70 34 11.3]"""
     try:
         lat_str, lon_str = coord_str.split()
         lat = float(lat_str[1:-1])
@@ -149,7 +151,7 @@ def raw_decode(data: List[str], fi, fo, screen: bool = False) -> List[Union[Tupl
     return res
 
 
-def google_decode(data: str, screen: bool = False) -> List[Union[Tuple[float, float], str]]:
+def google_decode(data: str, fi,fo,screen: bool = False) -> List[Union[Tuple[float, float], str]]:
     """Парсит координаты из строк Google Maps."""
     p = re.compile(r'<coordinates>\n.+\n.+</coordinates>')
     c = re.search(p, data)
