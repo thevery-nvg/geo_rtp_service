@@ -18,6 +18,8 @@ from core.config import settings
 from core.core_router import core_router
 from core.models import db_helper
 # from google_sheets.sheets_main import gs_router
+from cloud.uploader import upload_router
+from cloud.download import download_router
 
 
 @asynccontextmanager
@@ -38,6 +40,9 @@ app = FastAPI(
 app.include_router(api_router)
 app.include_router(core_router)
 # app.include_router(gs_router)
+app.include_router(upload_router)
+app.include_router(download_router)
+
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")

@@ -1,0 +1,348 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Download - FastAPI Фронтенд
+{% endblock %}
+
+{% block content %}
+<style>
+    .file-manager {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .path-navigation {
+        background: #f5f5f5;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .path-segments {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .path-segment {
+        color: #0066cc;
+        cursor: pointer;
+        text-decoration: none;
+    }
+    
+    .path-segment:hover {
+        text-decoration: underline;
+    }
+    
+    .path-separator {
+        color: #999;
+    }
+    
+    .files-list {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        overflow: hidden;
+    }
+    
+    .file-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 15px;
+        border-bottom: 1px solid #eee;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    .file-item:last-child {
+        border-bottom: none;
+    }
+    
+    .file-item:hover {
+        background-color: #f9f9f9;
+    }
+    
+    .file-icon {
+        width: 24px;
+        height: 24px;
+        margin-right: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .file-icon svg {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .file-info {
+        flex: 1;
+        display: flex;
+        align-items: center;
+    }
+    
+    .file-name {
+        flex: 2;
+        font-weight: 500;
+    }
+    
+    .file-size {
+        flex: 1;
+        color: #666;
+        font-size: 0.9em;
+    }
+    
+    .file-modified {
+        flex: 1;
+        color: #999;
+        font-size: 0.9em;
+    }
+    
+    .download-btn {
+        padding: 5px 15px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        font-size: 0.9em;
+        transition: background-color 0.2s;
+    }
+    
+    .download-btn:hover {
+        background-color: #45a049;
+    }
+    
+    .back-button {
+        padding: 8px 15px;
+        background-color: #f0f0f0;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .back-button:hover {
+        background-color: #e4e4e4;
+    }
+    
+    .back-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .loading {
+        text-align: center;
+        padding: 40px;
+        color: #666;
+    }
+    
+    .error-message {
+        background-color: #ffebee;
+        color: #c62828;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+    
+    .empty-folder {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+    }
+    
+    .folder-icon {
+        fill: #FFB74D;
+    }
+    
+    .file-icon-default {
+        fill: #64B5F6;
+    }
+</style>
+
+<div class="file-manager">
+    <h1>File Manager</h1>
+    
+    <div class="path-navigation">
+        <button class="back-button" id="backButton" onclick="navigateBack()">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
+            </svg>
+            Back
+        </button>
+        <div class="path-segments" id="pathSegments"></div>
+    </div>
+    
+    <div id="errorMessage" class="error-message" style="display: none;"></div>
+    
+    <div class="files-list" id="filesList">
+        <div class="loading">Loading files...</div>
+    </div>
+</div>
+
+<script>
+    let currentPath = '';
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        loadFiles();
+    });
+    
+    async function loadFiles(path = '') {
+        try {
+            showLoading();
+            hideError();
+            
+            const response = await fetch(`/api/files?path=${encodeURIComponent(path)}`);
+            const data = await response.json();
+            
+            if (data.error) {
+                showError(data.error);
+                return;
+            }
+            
+            currentPath = data.current_path || '';
+            updatePathNavigation(data.current_path);
+            renderFiles(data.items);
+            
+        } catch (error) {
+            showError('Failed to load files: ' + error.message);
+        }
+    }
+    
+    function renderFiles(items) {
+        const filesList = document.getElementById('filesList');
+        
+        if (!items || items.length === 0) {
+            filesList.innerHTML = '<div class="empty-folder">Folder is empty</div>';
+            return;
+        }
+        
+        let html = '';
+        items.forEach(item => {
+            const size = formatBytes(item.size);
+            const modified = new Date(item.modified).toLocaleString();
+            
+            if (item.is_dir) {
+                html += `
+                    <div class="file-item" onclick="navigateToFolder('${item.path}')">
+                        <div class="file-icon">
+                            <svg class="folder-icon" viewBox="0 0 24 24">
+                                <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+                            </svg>
+                        </div>
+                        <div class="file-info">
+                            <span class="file-name">${item.name}</span>
+                            <span class="file-size">Folder</span>
+                            <span class="file-modified">${modified}</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="file-item">
+                        <div class="file-icon">
+                            <svg class="file-icon-default" viewBox="0 0 24 24">
+                                <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+                            </svg>
+                        </div>
+                        <div class="file-info">
+                            <span class="file-name">${item.name}</span>
+                            <span class="file-size">${size}</span>
+                            <span class="file-modified">${modified}</span>
+                        </div>
+                        <button class="download-btn" onclick="downloadFile('${item.path}', event)">Download</button>
+                    </div>
+                `;
+            }
+        });
+        
+        filesList.innerHTML = html;
+    }
+    
+    function updatePathNavigation(path) {
+        const segments = document.getElementById('pathSegments');
+        
+        if (!path) {
+            segments.innerHTML = '<span class="path-segment" onclick="navigateToFolder(\'\')">Root</span>';
+            return;
+        }
+        
+        const parts = path.split('/');
+        let html = '';
+        let currentPath = '';
+        
+        html += '<span class="path-segment" onclick="navigateToFolder(\'\')">Root</span>';
+        
+        parts.forEach((part, index) => {
+            if (part) {
+                currentPath += (currentPath ? '/' : '') + part;
+                html += `<span class="path-separator">/</span>`;
+                if (index === parts.length - 1) {
+                    html += `<span class="path-segment">${part}</span>`;
+                } else {
+                    html += `<span class="path-segment" onclick="navigateToFolder('${currentPath}')">${part}</span>`;
+                }
+            }
+        });
+        
+        segments.innerHTML = html;
+        
+        // Обновляем состояние кнопки Back
+        const backButton = document.getElementById('backButton');
+        backButton.disabled = !path;
+    }
+    
+    function navigateToFolder(path) {
+        loadFiles(path);
+    }
+    
+    function navigateBack() {
+        if (currentPath) {
+            const parentPath = currentPath.split('/').slice(0, -1).join('/');
+            loadFiles(parentPath);
+        }
+    }
+    
+    async function downloadFile(filePath, event) {
+        event.stopPropagation();
+        try {
+            window.location.href = `/api/download/${encodeURIComponent(filePath)}`;
+        } catch (error) {
+            showError('Failed to download file: ' + error.message);
+        }
+    }
+    
+    function showLoading() {
+        document.getElementById('filesList').innerHTML = '<div class="loading">Loading files...</div>';
+    }
+    
+    function showError(message) {
+        const errorDiv = document.getElementById('errorMessage');
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+    }
+    
+    function hideError() {
+        document.getElementById('errorMessage').style.display = 'none';
+    }
+    
+    function formatBytes(bytes, decimals = 2) {
+        if (bytes === 0) return '0 Bytes';
+        
+        const k = 1024;
+        const dm = decimals < 0 ? 0 : decimals;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+        
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    }
+</script>
+{% endblock %}

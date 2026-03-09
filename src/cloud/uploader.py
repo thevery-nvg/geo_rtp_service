@@ -6,8 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, FileResponse
 from pathlib import Path
-from auth import current_user_strict, current_user
-from auth.models import User
+
 from core.config import settings
 from loguru import logger
 from .services import format_size
@@ -21,22 +20,22 @@ cloud = Path(settings.cloud.url)
 
 
 @upload_router.get("/upload", response_class=HTMLResponse)
-async def upload_page(request: Request, user: User = Depends(current_user_strict)):
-    return templates.TemplateResponse("upload.html", {"request": request, "user": user})
+async def upload_page(request: Request):
+    return templates.TemplateResponse("upload.html", {"request": request})
 
 
 @upload_router.post("/upload")
 async def upload_files(files: List[UploadFile] = File(...),
-                       user: User = Depends(current_user_strict)):
-    logger.info(f"{user.email} is uploading {len(files)} files; size = "
-                f"{format_size(sum([file.size for file in files]))};{[file.filename for file in files]}")
-    if not cloud.joinpath(str(user.email)).exists():
-        cloud.joinpath(str(user.email)).mkdir()
+                       ):
+    # logger.info(f"{user.email} is uploading {len(files)} files; size = "
+    #             f"{format_size(sum([file.size for file in files]))};{[file.filename for file in files]}")
+    if not cloud.exists():
+        cloud.mkdir()
     date = str(datetime.now().date())
-    if not cloud.joinpath(str(user.email)).joinpath(date).exists():
-        cloud.joinpath(str(user.email)).joinpath(date).mkdir()
+    if not cloud.joinpath(date).exists():
+        cloud.joinpath(date).mkdir()
     for file in files:
-        with (open(cloud.joinpath(str(user.email)).joinpath(date).joinpath(file.filename), 'wb') as
+        with (open(cloud.joinpath(date).joinpath(file.filename), 'wb') as
               buffer):
             shutil.copyfileobj(file.file, buffer)
     return {"filename": [file.filename for file in files]}

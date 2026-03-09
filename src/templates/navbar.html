@@ -6,7 +6,7 @@
         <button class="ui-btn" onclick="upload_redirect()"><span>Upload</span></button>
     </li>
     <li>
-        <button class="ui-btn" onclick="snake_redirect()"><span>Змейка</span></button>
+        <button class="ui-btn" onclick="download_redirect()"><span>Download</span></button>
     </li>
     <li class="move-left">
         {% if not user %}
@@ -27,8 +27,8 @@ function login_redirect() {
     document.location.href = '/login_proxy';
 }
 
-function snake_redirect() {
-    document.location.href = '/snake';
+function download_redirect() {
+    document.location.href = '/download';
 }
 
 function upload_redirect() {
