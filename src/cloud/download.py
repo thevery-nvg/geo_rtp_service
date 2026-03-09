@@ -67,23 +67,61 @@ async def get_files(path: str = ""):
 async def download_file(file_path: str):
     """Скачивание файла"""
     try:
-        file_full_path = cloud / file_path
+        import base64
+        from urllib.parse import unquote
+
+        # Пробуем декодировать как base64 если путь начинается с b64_
+        if file_path.startswith('b64_'):
+            try:
+                # Убираем префикс и декодируем base64
+                encoded_path = file_path[4:]  # убираем 'b64_'
+                decoded_bytes = base64.b64decode(encoded_path)
+                decoded_path = decoded_bytes.decode('utf-8')
+                logger.info(f"Decoded base64 path: {decoded_path}")
+            except:
+                # Если не получилось, используем как есть
+                decoded_path = unquote(file_path)
+        else:
+            decoded_path = unquote(file_path)
+
+        # Очищаем путь от возможных проблемных символов
+        decoded_path = decoded_path.replace('\x00', '')  # убираем нулевые байты
+
+        file_full_path = cloud / decoded_path
+        logger.info(f"Full file path: {file_full_path}")
 
         if not file_full_path.exists():
-            raise HTTPException(status_code=404, detail="File not found")
+            # Пробуем найти файл без учета регистра
+            found = False
+            if file_full_path.parent.exists():
+                for f in file_full_path.parent.iterdir():
+                    if f.name.lower() == file_full_path.name.lower():
+                        file_full_path = f
+                        found = True
+                        break
+
+            if not found:
+                raise HTTPException(status_code=404, detail=f"File not found: {decoded_path}")
 
         if file_full_path.is_dir():
             raise HTTPException(status_code=400, detail="Cannot download directory")
 
-        # Определяем MIME тип
+        # Читаем файл и отдаем как есть
         mime_type, _ = mimetypes.guess_type(str(file_full_path))
         if not mime_type:
             mime_type = "application/octet-stream"
 
+        # Отдаем файл с правильными заголовками
         return FileResponse(
             path=file_full_path,
             filename=file_full_path.name,
-            media_type=mime_type
+            media_type=mime_type,
+            headers={
+                "Content-Disposition": f"attachment; filename=\"{file_full_path.name}\"",
+                "Content-Transfer-Encoding": "binary",
+                "Accept-Ranges": "bytes",
+                "Cache-Control": "no-cache"
+            }
         )
     except HTTPException:
         raise
