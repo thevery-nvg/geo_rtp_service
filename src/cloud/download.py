@@ -1,12 +1,13 @@
-import os
-from fastapi import Request, HTTPException
-from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
-from pathlib import Path
+
+from fastapi import  HTTPException
+from fastapi.responses import  JSONResponse
+
+import base64
+from urllib.parse import unquote
 import mimetypes
 from datetime import datetime
-from fastapi import APIRouter, UploadFile, File, Form, Request, Depends
-import shutil
-from typing import List
+from fastapi import APIRouter, Request
+
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, FileResponse
@@ -67,8 +68,7 @@ async def get_files(path: str = ""):
 async def download_file(file_path: str):
     """Скачивание файла"""
     try:
-        import base64
-        from urllib.parse import unquote
+
 
         # Пробуем декодировать как base64 если путь начинается с b64_
         if file_path.startswith('b64_'):
