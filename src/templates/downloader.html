@@ -6,420 +6,619 @@ Download - FastAPI Фронтенд
 
 {% block content %}
 <style>
-    .file-manager {
-        max-width: 800px;
-        margin: 0 auto;
+    .download-wrapper {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 80px);
+        width: 100%;
         padding: 20px;
+        box-sizing: border-box;
     }
-    
+
+    .download-container {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(135deg, #181a22 0%, #000000 100%);
+        border-radius: 24px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        padding: 20px;
+        box-sizing: border-box;
+    }
+
+    .download-card {
+        background: white;
+        border-radius: 24px;
+        padding: 30px;
+        width: 100%;
+        max-width: 900px;
+        max-height: 100%;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .download-header {
+        text-align: center;
+        margin-bottom: 20px;
+        flex-shrink: 0;
+    }
+
+    .download-header h1 {
+        color: #333;
+        font-size: 28px;
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+
+    .download-header p {
+        color: #666;
+        font-size: 15px;
+    }
+
     .path-navigation {
-        background: #f5f5f5;
-        padding: 10px;
-        border-radius: 5px;
+        background: linear-gradient(135deg, #f5f7fa 0%, #e9ecf2 100%);
+        padding: 15px 20px;
+        border-radius: 16px;
         margin-bottom: 20px;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 15px;
+        flex-shrink: 0;
+        border: 1px solid rgba(102, 126, 234, 0.1);
     }
-    
+
+    .back-button {
+        padding: 10px 18px;
+        background: white;
+        border: 2px solid #272a35;
+        border-radius: 12px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #191c2b;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+
+    .back-button:hover:not(:disabled) {
+        background: #272736;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .back-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        border-color: #ccc;
+        color: #999;
+    }
+
+    .back-button svg {
+        width: 16px;
+        height: 16px;
+        fill: currentColor;
+    }
+
     .path-segments {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
         gap: 5px;
+        font-size: 14px;
+        flex: 1;
     }
-    
+
     .path-segment {
-        color: #0066cc;
+        color: #1e1f25;
         cursor: pointer;
         text-decoration: none;
+        padding: 5px 8px;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        font-weight: 500;
     }
-    
+
     .path-segment:hover {
-        text-decoration: underline;
+        background: rgba(102, 126, 234, 0.1);
     }
-    
+
     .path-separator {
         color: #999;
+        margin: 0 2px;
     }
-    
+
+    .files-container {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        border-radius: 16px;
+        background: #f8fafd;
+        border: 2px solid #eef2f6;
+        scrollbar-width: thin;
+        scrollbar-color: #1f2129 #e0e0e0;
+    }
+
+    .files-container::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .files-container::-webkit-scrollbar-track {
+        background: #eef2f6;
+        border-radius: 8px;
+    }
+
+    .files-container::-webkit-scrollbar-thumb {
+        background: #23252c;
+        border-radius: 8px;
+    }
+
     .files-list {
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        overflow: hidden;
+        display: flex;
+        flex-direction: column;
     }
-    
+
     .file-item {
         display: flex;
         align-items: center;
-        padding: 12px 15px;
-        border-bottom: 1px solid #eee;
+        padding: 15px 20px;
+        border-bottom: 1px solid #eef2f6;
         cursor: pointer;
-        transition: background-color 0.2s;
+        transition: all 0.2s ease;
     }
-    
+
     .file-item:last-child {
         border-bottom: none;
     }
-    
+
     .file-item:hover {
-        background-color: #f9f9f9;
+        background: white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
-    
+
     .file-icon {
-        width: 24px;
-        height: 24px;
+        width: 32px;
+        height: 32px;
         margin-right: 15px;
         display: flex;
         align-items: center;
         justify-content: center;
+        flex-shrink: 0;
     }
-    
+
     .file-icon svg {
-        width: 20px;
-        height: 20px;
+        width: 24px;
+        height: 24px;
     }
-    
+
+    .folder-icon {
+        fill: #FFB74D;
+    }
+
+    .file-icon-default {
+        fill: #33383b;
+    }
+
     .file-info {
         flex: 1;
         display: flex;
         align-items: center;
+        gap: 20px;
+        min-width: 0;
     }
-    
+
     .file-name {
         flex: 2;
         font-weight: 500;
+        color: #333;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
-    
+
     .file-size {
         flex: 1;
         color: #666;
         font-size: 0.9em;
+        white-space: nowrap;
     }
-    
+
     .file-modified {
         flex: 1;
         color: #999;
         font-size: 0.9em;
+        white-space: nowrap;
     }
-    
+
     .download-btn {
-        padding: 5px 15px;
-        background-color: #4CAF50;
+        padding: 8px 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         border: none;
-        border-radius: 3px;
+        border-radius: 12px;
         cursor: pointer;
         font-size: 0.9em;
-        transition: background-color 0.2s;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        white-space: nowrap;
+        margin-left: 15px;
+        flex-shrink: 0;
     }
-    
+
     .download-btn:hover {
-        background-color: #45a049;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(9, 9, 10, 0.5);
     }
-    
-    .back-button {
-        padding: 8px 15px;
-        background-color: #f0f0f0;
-        border: none;
-        border-radius: 3px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 5px;
+
+    .download-btn:active {
+        transform: translateY(0);
     }
-    
-    .back-button:hover {
-        background-color: #e4e4e4;
+
+    .download-btn:disabled {
+        opacity: 0.7;
+        cursor: wait;
+        transform: none;
     }
-    
-    .back-button:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-    
+
     .loading {
         text-align: center;
-        padding: 40px;
-        color: #666;
+        padding: 60px 20px;
+        color: #272933;
+        font-size: 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
     }
-    
+
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid #eef2f6;
+        border-top-color: #30323a;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
     .error-message {
-        background-color: #ffebee;
-        color: #c62828;
-        padding: 10px;
-        border-radius: 5px;
+        background: linear-gradient(135deg, #fff5f5 0%, #ffe3e3 100%);
+        color: #c53030;
+        padding: 15px 20px;
+        border-radius: 12px;
         margin-bottom: 20px;
+        border-left: 4px solid #c53030;
+        font-weight: 500;
+        flex-shrink: 0;
+        animation: slideIn 0.3s ease;
     }
-    
+
     .empty-folder {
         text-align: center;
-        padding: 40px;
+        padding: 60px 20px;
         color: #999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
     }
-    
-    .folder-icon {
-        fill: #FFB74D;
+
+    .empty-folder svg {
+        width: 64px;
+        height: 64px;
+        fill: #ccc;
     }
-    
-    .file-icon-default {
-        fill: #64B5F6;
+
+    .stats-badge {
+        background: rgba(102, 126, 234, 0.1);
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        color: #2e2f38;
+        margin-left: 10px;
+    }
+
+    @media (max-width: 768px) {
+        .download-wrapper {
+            padding: 10px;
+        }
+
+        .download-card {
+            padding: 20px;
+        }
+
+        .file-info {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+        }
+
+        .file-name, .file-size, .file-modified {
+            width: 100%;
+        }
+
+        .file-item {
+            flex-wrap: wrap;
+        }
+
+        .download-btn {
+            margin-left: 47px;
+            width: calc(100% - 47px);
+        }
+
+        .path-navigation {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .back-button {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .path-segments {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .download-header h1 {
+            font-size: 24px;
+        }
     }
 </style>
 
-<div class="file-manager">
-    <h1>File Manager</h1>
-    
-    <div class="path-navigation">
-        <button class="back-button" id="backButton" onclick="navigateBack()">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                <path d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
-            </svg>
-            Back
-        </button>
-        <div class="path-segments" id="pathSegments"></div>
-    </div>
-    
-    <div id="errorMessage" class="error-message" style="display: none;"></div>
-    
-    <div class="files-list" id="filesList">
-        <div class="loading">Loading files...</div>
+<div class="download-wrapper">
+    <div class="download-container">
+        <div class="download-card">
+            <div class="download-header">
+                <h1>Файловый менеджер</h1>
+                <p>Просмотр и скачивание файлов с сервера</p>
+            </div>
+
+            <div class="path-navigation">
+                <button class="back-button" id="backButton" onclick="navigateBack()">
+                    <svg viewBox="0 0 16 16">
+                        <path d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
+                    </svg>
+                    Назад
+                </button>
+                <div class="path-segments" id="pathSegments"></div>
+            </div>
+
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+            <div class="files-container" id="filesContainer">
+                <div class="files-list" id="filesList">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        Загрузка файлов...
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
     let currentPath = '';
-    
+
     document.addEventListener('DOMContentLoaded', () => {
         loadFiles();
     });
-    
+
     async function loadFiles(path = '') {
-    try {
-        showLoading();
-        hideError();
+        try {
+            showLoading();
+            hideError();
 
-        // Кодируем путь для запроса
-        const encodedPath = encodeURIComponent(path);
-        const response = await fetch(`/api/files?path=${encodedPath}`);
+            const encodedPath = encodeURIComponent(path);
+            const response = await fetch(`/api/files?path=${encodedPath}`);
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (data.error) {
+                showError(data.error);
+                return;
+            }
+
+            currentPath = data.current_path || '';
+            updatePathNavigation(data.current_path);
+            renderFiles(data.items);
+
+        } catch (error) {
+            showError('Не удалось загрузить файлы: ' + error.message);
+            console.error('Load files error:', error);
         }
+    }
 
-        const data = await response.json();
+    function renderFiles(items) {
+        const filesList = document.getElementById('filesList');
 
-        if (data.error) {
-            showError(data.error);
+        if (!items || items.length === 0) {
+            filesList.innerHTML = `
+                <div class="empty-folder">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6 10H6v-2h8v2zm4-4H6v-2h12v2z"/>
+                    </svg>
+                    <span>Папка пуста</span>
+                </div>
+            `;
             return;
         }
 
-        currentPath = data.current_path || '';
-        updatePathNavigation(data.current_path);
-        renderFiles(data.items);
+        let html = '';
+        items.forEach(item => {
+            const size = formatBytes(item.size);
+            const modified = new Date(item.modified).toLocaleString('ru-RU');
+            const safePath = item.path.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 
-    } catch (error) {
-        showError('Failed to load files: ' + error.message);
-        console.error('Load files error:', error);
+            if (item.is_dir) {
+                html += `
+                    <div class="file-item" onclick="navigateToFolder('${safePath}')">
+                        <div class="file-icon">
+                            <svg class="folder-icon" viewBox="0 0 24 24">
+                                <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+                            </svg>
+                        </div>
+                        <div class="file-info">
+                            <span class="file-name">${escapeHtml(item.name)}</span>
+                            <span class="file-size"><span class="stats-badge">📁 Папка</span></span>
+                            <span class="file-modified">${modified}</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="file-item">
+                        <div class="file-icon">
+                            <svg class="file-icon-default" viewBox="0 0 24 24">
+                                <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+                            </svg>
+                        </div>
+                        <div class="file-info">
+                            <span class="file-name">${escapeHtml(item.name)}</span>
+                            <span class="file-size">${size}</span>
+                            <span class="file-modified">${modified}</span>
+                        </div>
+                        <button class="download-btn" onclick="downloadFile('${safePath}', event)">Скачать</button>
+                    </div>
+                `;
+            }
+        });
+
+        filesList.innerHTML = html;
     }
-}
-    
-    function renderFiles(items) {
-    const filesList = document.getElementById('filesList');
 
-    if (!items || items.length === 0) {
-        filesList.innerHTML = '<div class="empty-folder">Folder is empty</div>';
-        return;
+    function escapeHtml(unsafe) {
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
     }
 
-    let html = '';
-    items.forEach(item => {
-        const size = formatBytes(item.size);
-        const modified = new Date(item.modified).toLocaleString();
-
-        // Экранируем путь для использования в JavaScript
-        const safePath = item.path.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-
-        if (item.is_dir) {
-            html += `
-                <div class="file-item" onclick="navigateToFolder('${safePath}')">
-                    <div class="file-icon">
-                        <svg class="folder-icon" viewBox="0 0 24 24">
-                            <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
-                        </svg>
-                    </div>
-                    <div class="file-info">
-                        <span class="file-name">${escapeHtml(item.name)}</span>
-                        <span class="file-size">Folder</span>
-                        <span class="file-modified">${modified}</span>
-                    </div>
-                </div>
-            `;
-        } else {
-            html += `
-                <div class="file-item">
-                    <div class="file-icon">
-                        <svg class="file-icon-default" viewBox="0 0 24 24">
-                            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
-                        </svg>
-                    </div>
-                    <div class="file-info">
-                        <span class="file-name">${escapeHtml(item.name)}</span>
-                        <span class="file-size">${size}</span>
-                        <span class="file-modified">${modified}</span>
-                    </div>
-                    <button class="download-btn" onclick="downloadFile('${safePath}', event)">Download</button>
-                </div>
-            `;
-        }
-    });
-
-    filesList.innerHTML = html;
-}
-
-// Функция для экранирования HTML
-function escapeHtml(unsafe) {
-    return unsafe
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-}
-    
     function updatePathNavigation(path) {
         const segments = document.getElementById('pathSegments');
-        
+
         if (!path) {
-            segments.innerHTML = '<span class="path-segment" onclick="navigateToFolder(\'\')">Root</span>';
+            segments.innerHTML = '<span class="path-segment" onclick="navigateToFolder(\'\')">Корень</span>';
             return;
         }
-        
+
         const parts = path.split('/');
         let html = '';
         let currentPath = '';
-        
-        html += '<span class="path-segment" onclick="navigateToFolder(\'\')">Root</span>';
-        
+
+        html += '<span class="path-segment" onclick="navigateToFolder(\'\')">Корень</span>';
+
         parts.forEach((part, index) => {
             if (part) {
                 currentPath += (currentPath ? '/' : '') + part;
                 html += `<span class="path-separator">/</span>`;
                 if (index === parts.length - 1) {
-                    html += `<span class="path-segment">${part}</span>`;
+                    html += `<span class="path-segment">${escapeHtml(part)}</span>`;
                 } else {
-                    html += `<span class="path-segment" onclick="navigateToFolder('${currentPath}')">${part}</span>`;
+                    html += `<span class="path-segment" onclick="navigateToFolder('${currentPath}')">${escapeHtml(part)}</span>`;
                 }
             }
         });
-        
+
         segments.innerHTML = html;
-        
-        // Обновляем состояние кнопки Back
+
         const backButton = document.getElementById('backButton');
         backButton.disabled = !path;
     }
-    
+
     function navigateToFolder(path) {
         loadFiles(path);
     }
-    
+
     function navigateBack() {
         if (currentPath) {
             const parentPath = currentPath.split('/').slice(0, -1).join('/');
             loadFiles(parentPath);
         }
     }
-    
-async function downloadFile(filePath, event) {
-    event.stopPropagation();
 
-    const button = event.target;
-    const originalText = button.textContent;
-    button.textContent = '⏳';
-    button.disabled = true;
+    async function downloadFile(filePath, event) {
+        event.stopPropagation();
 
-    try {
-        // Конвертируем путь в base64
-        const base64Path = btoa(unescape(encodeURIComponent(filePath)));
+        const button = event.target;
+        const originalText = button.textContent;
+        button.textContent = '⏳';
+        button.disabled = true;
 
-        // Создаем ссылку с base64 путем
-        const link = document.createElement('a');
-        link.href = `/api/download/b64_${base64Path}`;
-        link.download = filePath.split('/').pop();
-        link.style.display = 'none';
+        try {
+            const base64Path = btoa(unescape(encodeURIComponent(filePath)));
+            const link = document.createElement('a');
+            link.href = `/api/download/b64_${base64Path}`;
+            link.download = filePath.split('/').pop();
+            link.style.display = 'none';
 
-        document.body.appendChild(link);
-        link.click();
+            document.body.appendChild(link);
+            link.click();
 
-        // Очищаем
-        setTimeout(() => {
-            document.body.removeChild(link);
-        }, 1000);
+            setTimeout(() => {
+                document.body.removeChild(link);
+                button.textContent = '✅';
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.disabled = false;
+                }, 1000);
+            }, 100);
 
-    } catch (error) {
-        console.error('Download error:', error);
-        showError('Failed to download file: ' + error.message);
-
-        // Пробуем альтернативный метод
-        tryAlternativeDownload(filePath, event);
-    } finally {
-        setTimeout(() => {
+        } catch (error) {
+            console.error('Download error:', error);
+            showError('Не удалось скачать файл');
             button.textContent = originalText;
             button.disabled = false;
-        }, 2000);
-    }
-}
-
-// Альтернативный метод с fetch и blob
-async function tryAlternativeDownload(filePath, event) {
-    try {
-        const response = await fetch(`/api/download/${encodeURIComponent(filePath)}`);
-
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
         }
-
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = filePath.split('/').pop();
-
-        document.body.appendChild(link);
-        link.click();
-
-        setTimeout(() => {
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
-        }, 100);
-
-    } catch (error) {
-        console.error('Alternative download failed:', error);
-        showError('All download methods failed');
     }
-}
-    
+
     function showLoading() {
-        document.getElementById('filesList').innerHTML = '<div class="loading">Loading files...</div>';
+        document.getElementById('filesList').innerHTML = `
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                Загрузка файлов...
+            </div>
+        `;
     }
-    
+
     function showError(message) {
         const errorDiv = document.getElementById('errorMessage');
         errorDiv.textContent = message;
         errorDiv.style.display = 'block';
+
+        setTimeout(() => {
+            errorDiv.style.display = 'none';
+        }, 5000);
     }
-    
+
     function hideError() {
         document.getElementById('errorMessage').style.display = 'none';
     }
-    
+
     function formatBytes(bytes, decimals = 2) {
-        if (bytes === 0) return '0 Bytes';
-        
+        if (bytes === 0) return '0 Б';
+
         const k = 1024;
         const dm = decimals < 0 ? 0 : decimals;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+        const sizes = ['Б', 'КБ', 'МБ', 'ГБ', 'ТБ'];
         
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         
