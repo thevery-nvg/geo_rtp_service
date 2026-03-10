@@ -1,0 +1,86 @@
+.action-button {
+        flex: 1;
+        padding: 14px;
+        border: none;
+        border-radius: 14px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .primary-button {
+        background: linear-gradient(135deg, #21232c 0%, #000000 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(5, 6, 7, 0.3);
+    }
+
+    .primary-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(23, 26, 36, 0.5);
+    }
+
+    .primary-button:active {
+        transform: translateY(0);
+    }
+
+    .secondary-button {
+        background: white;
+        color: #667eea;
+        border: 2px solid #181a24;
+    }
+
+    .secondary-button:hover {
+        background: #f0f4ff;
+        transform: translateY(-2px);
+    }
+
+    .secondary-button:active {
+        transform: translateY(0);
+    }
+
+    .button-icon {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+    }
+
+    .button-icon svg {
+        width: 100%;
+        height: 100%;
+        stroke: currentColor;
+        stroke-width: 2;
+        fill: none;
+    }
+
+
+
+.btn {
+  width: 130px;
+  height: 40px;
+  font-size: 1.1em;
+  cursor: pointer;
+  background-color: #171717;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  transition: all 0.4s;
+}
+
+.btn:hover {
+  border-radius: 5px;
+  transform: translateY(-10px);
+  box-shadow: 0 7px 0 -2px #f85959, 0 15px 0 -4px #39a2db,
+    0 16px 10px -3px #39a2db;
+}
+
+.btn:active {
+  transition: all 0.2s;
+  transform: translateY(-5px);
+  box-shadow: 0 2px 0 -2px #f85959, 0 8px 0 -4px #39a2db,
+    0 12px 10px -3px #39a2db;
+}
