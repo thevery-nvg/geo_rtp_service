@@ -43,15 +43,18 @@ body {
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         padding: 20px;
         box-sizing: border-box;
-        overflow: hidden;
+        overflow-y: auto;
 }
 
 .input-section,
 .output-section {
+  font-family: sans-serif;
   flex: 1;
   padding: 20px;
   box-sizing: border-box;
-}
+  background-color: rgba(240, 240, 240, 0.845);
+  overflow-y: auto; /* Добавляет вертикальную прокрутку при необходимости */
+  max-height: 100%; /* Ограничивает высоту в пределах родительского контейнера */
 
 .input-section {
   background-color: rgba(240, 240, 240, 0.845);
